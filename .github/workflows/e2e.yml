@@ -15,7 +15,7 @@ jobs:
         ports:
           - 4444:4444
         options: >-
-          --shm-size=2g
+          --shm-size=2g --privileged --ipc=host
 
     env:
       RUN_MODE: e2e
@@ -94,6 +94,7 @@ jobs:
         with:
           name: output
           path: output
+
 
 
 
