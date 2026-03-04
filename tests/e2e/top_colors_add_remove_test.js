@@ -17,7 +17,8 @@ Scenario("Top colors -> select -> add to cart -> remove (per URL)", async ({ I }
     return;
   }
 
-  const topN = Number(process.env.TOP_COLORS || 3);
+  const parsed = parseInt(String(process.env.TOP_COLORS || "3").trim(), 10);
+const topN = Number.isFinite(parsed) ? parsed : 3;
   const caseReport = getCaseReport();
   I.say("CaseReport=" + (caseReport ? "OK" : "NULL"));
   I.say("TOP_COLORS=" + topN);
