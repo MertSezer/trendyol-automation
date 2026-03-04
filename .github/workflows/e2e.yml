@@ -29,12 +29,16 @@ jobs:
           cache: "npm"
 
       - name: Install deps
-        run: npm ci      - name: Start Selenium container
+        run: npm ci
+
+      - name: Start Selenium container
         shell: bash
         run: |
           docker rm -f selenium 2>/dev/null || true
           docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host -e SE_NODE_SESSION_TIMEOUT=300 -e SE_SESSION_REQUEST_TIMEOUT=300 -e SE_SESSION_RETRY_INTERVAL=2 selenium/standalone-chrome:latest
-          docker ps -a | sed -n '1,20p'      - name: Wait Selenium
+          docker ps -a | sed -n '1,30p'
+
+      - name: Wait Selenium
         shell: bash
         run: |
           for i in {1..120}; do
@@ -56,35 +60,10 @@ jobs:
           fi
           ls -la products*.txt || true
 
-      - name: Selenium preflight
-        shell: bash
-        run: |
-          echo "== /status =="
-          curl -s http://localhost:4444/status || true
-          echo ""
-          echo "== /wd/hub/status =="
-          curl -s http://localhost:4444/wd/hub/status || true
-          echo ""
-          echo "== try create session =="
-          curl -s -X POST "http://localhost:4444/session" -H "Content-Type: application/json" --data '{"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":{"args":["--headless=new","--no-sandbox","--disable-dev-shm-usage"]}}}}' || true
-          echo ""
-
       - name: Run tests
         shell: bash
         run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
 
-      - name: Publish summary to Job Summary
-        if: always()
-        shell: bash
-        run: |
-          {
-            echo "## Test Summary"
-            if [ -f "output/summary.md" ]; then
-              cat output/summary.md
-            else
-              echo "No output/summary.md found"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload artifacts (output)
         if: always()
         uses: actions/upload-artifact@v4
@@ -99,7 +78,3 @@ jobs:
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
-
-
-
-
