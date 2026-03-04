@@ -105,7 +105,7 @@ JSON
             else
               echo "No output/summary.md found"
             fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          } >> "`$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifacts (output)
         if: always()
@@ -121,4 +121,5 @@ JSON
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
 
