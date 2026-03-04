@@ -32,7 +32,9 @@ exports.config = {
         
         webSocketUrl: true,
 pageLoadStrategy: 'eager',
-        'goog:chromeOptions': {
+        
+        'se:bidiEnabled': false,
+'goog:chromeOptions': {
           args: [
             '--no-sandbox',
             '--disable-dev-shm-usage',
