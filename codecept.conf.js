@@ -1,6 +1,7 @@
 ﻿require('dotenv').config({ override: true });
 
-const isCI = String(process.env.CI || '').toLowerCase() === 'true';// RUN_MODE=smoke  -> no browser
+const isCI = String(process.env.CI || '').toLowerCase() === 'true';
+// RUN_MODE=smoke  -> no browser
 // RUN_MODE=e2e    -> webdriver enabled
 const runMode = (process.env.RUN_MODE || 'e2e').toLowerCase();
 
@@ -78,6 +79,7 @@ exports.config = {
 
   name: 'trendyol-automation'
 };
+
 
 
 
