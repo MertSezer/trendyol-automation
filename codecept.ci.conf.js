@@ -11,7 +11,9 @@ exports.config = {
     ReportHelper: { require: './helpers/report.js', outputDir: './output', summaryFile: 'summary.json' },
 
     WebDriver: {
-      url: process.env.BASE_URL || 'https://www.trendyol.com',
+      
+      logLevel: 'silent',
+url: process.env.BASE_URL || 'https://www.trendyol.com',
       host: process.env.SELENIUM_HOST || 'localhost',
       port: Number(process.env.SELENIUM_PORT || 4444),
       path: process.env.SELENIUM_PATH || '/',
