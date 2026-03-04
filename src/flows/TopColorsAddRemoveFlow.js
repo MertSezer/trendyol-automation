@@ -38,7 +38,17 @@ class TopColorsAddRemoveFlow {
   async discoverColors() {
     // Runs in browser context; tries multiple heuristics
     const colors = await this.I.executeScript(function () {
-      const norm = (s) => (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+      const norm = (s) => {
+  const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+  // TR -> ASCII
+  return x
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c");
+};
 
       // Candidate regions containing color options
       const regionSelectors = [
@@ -67,10 +77,22 @@ class TopColorsAddRemoveFlow {
 
           // label sources
           const aria = el.getAttribute && el.getAttribute("aria-label");
-          const title = el.getAttribute && el.getAttribute("title");
-          const txt = (el.innerText || el.textContent || "").trim();
+const title = el.getAttribute && el.getAttribute("title");
+const txt = (el.innerText || el.textContent || "").trim();
 
-          const label = (aria || title || txt || "").trim();
+// swatch içinde img varsa alt/title al
+const img = el.querySelector && el.querySelector("img");
+const imgAlt = img && (img.getAttribute("alt") || img.getAttribute("title")) || "";
+
+// input varsa value/aria al
+const input = el.querySelector && el.querySelector("input");
+const inputVal = input && (input.getAttribute("value") || input.getAttribute("aria-label")) || "";
+
+// data-* kaynakları
+const dataVal =
+  (el.getAttribute && (el.getAttribute("data-value") || el.getAttribute("data-variant") || el.getAttribute("data-color") || el.getAttribute("data-name"))) || "";
+
+const label = (aria || title || imgAlt || inputVal || dataVal || txt || "").trim();
           if (!label) return;
 
           // Heuristic: likely a color swatch label
@@ -78,8 +100,8 @@ class TopColorsAddRemoveFlow {
           const looksLikeColor =
             l.includes("renk") ||
             l.includes("color") ||
-            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÄ±rmÄ±zÄ±") ||
-            l.includes("yesil") || l.includes("yeÅŸil") || l.includes("gri") || l.includes("mor") ||
+            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÃ„Â±rmÃ„Â±zÃ„Â±") ||
+            l.includes("yesil") || l.includes("yeÃ…Å¸il") || l.includes("gri") || l.includes("mor") ||
             l.includes("pembe") || l.includes("kahve") || l.includes("lacivert") || l.includes("turuncu");
 
           // Also accept short labels (e.g., "Siyah", "Mavi") even without "renk"
@@ -110,7 +132,17 @@ class TopColorsAddRemoveFlow {
   async selectColorByIndex(index) {
     // Re-run same discovery and click by index in one script to avoid stale refs
     const clicked = await this.I.executeScript(function (indexInner) {
-      const norm = (s) => (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+      const norm = (s) => {
+  const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+  // TR -> ASCII
+  return x
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c");
+};
 
       const regionSelectors = [
         '[data-testid*="color"]',
@@ -141,8 +173,8 @@ class TopColorsAddRemoveFlow {
           const l = norm(label);
           const looksLikeColor =
             l.includes("renk") || l.includes("color") ||
-            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÄ±rmÄ±zÄ±") ||
-            l.includes("yesil") || l.includes("yeÅŸil") || l.includes("gri") || l.includes("mor") ||
+            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÃ„Â±rmÃ„Â±zÃ„Â±") ||
+            l.includes("yesil") || l.includes("yeÃ…Å¸il") || l.includes("gri") || l.includes("mor") ||
             l.includes("pembe") || l.includes("kahve") || l.includes("lacivert") || l.includes("turuncu");
 
           if (!looksLikeColor && label.length > 25) return;
