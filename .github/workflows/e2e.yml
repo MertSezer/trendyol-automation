@@ -8,13 +8,6 @@ on:
 jobs:
   codecept-e2e:
     runs-on: ubuntu-latest
-
-    services:
-      selenium:
-        image: selenium/standalone-chrome:latest
-        ports:
-          - 4444:4444
-        options: >-
           --shm-size=2g --privileged --ipc=host
 
     env:
@@ -36,10 +29,12 @@ jobs:
           node-version: "24"
           cache: "npm"
 
-      - name: Install deps
-        run: npm ci
-
-      - name: Wait Selenium
+      
+      - name: Start Selenium container
+        shell: bash
+        run: |
+          docker run -d --name selenium -p 4444:4444 --shm-size=2g --privileged --ipc=host selenium/standalone-chrome:latest
+          docker ps -a | sed -n '1,5p'      - name: Wait Selenium
         shell: bash
         run: |
           for i in {1..60}; do
@@ -112,6 +107,7 @@ JSON
         with:
           name: output
           path: output
+
 
 
 
