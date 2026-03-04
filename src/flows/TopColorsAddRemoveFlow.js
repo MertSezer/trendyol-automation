@@ -38,79 +38,87 @@ class TopColorsAddRemoveFlow {
   async discoverColors() {
     // Runs in browser context; tries multiple heuristics
     const colors = await this.I.executeScript(function () {
-      const norm = (s) => {
-  const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
-  // TR -> ASCII
-  return x
-    .replace(/ı/g, "i")
-    .replace(/ğ/g, "g")
-    .replace(/ü/g, "u")
-    .replace(/ş/g, "s")
-    .replace(/ö/g, "o")
-    .replace(/ç/g, "c");
-};
+  const norm = (s) => {
+    const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+    return x
+      .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
+      .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
+  };
 
-      // Candidate regions containing color options
-      const regionSelectors = [
-        '[data-testid*="color"]',
-        '[class*="color"]',
-        '[class*="Colour"]',
-        '[aria-label*="Renk"]',
-        '[id*="color"]'
-      ];
+  const labelCandidates = Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span,p,dt,dd,label,strong,b"))
+    .filter(el => {
+      const t = norm(el.innerText || el.textContent);
+      return t === "renk" || t.startsWith("renk ");
+    })
+    .slice(0, 10);
 
-      const regions = [];
-      for (const sel of regionSelectors) {
-        document.querySelectorAll(sel).forEach((el) => regions.push(el));
-      }
+  function isBadRegion(el) {
+    if (!el || !el.closest) return false;
+    return !!el.closest("header,nav,footer,[data-testid*='header'],[data-testid*='footer']");
+  }
 
-      // If no regions, fallback to entire document
-      const scope = regions.length ? regions : [document];
+  function pickContainer(el) {
+    let cur = el;
+    for (let i = 0; i < 6 && cur; i++) {
+      const options = cur.querySelectorAll("button, li, label, div[role='button'], span[role='button'], input[type='radio']");
+      if (options && options.length >= 2 && !isBadRegion(cur)) return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  }
 
-      // Collect clickable nodes
-      const clickable = [];
-      for (const root of scope) {
-        root.querySelectorAll('button, a, div[role="button"], span[role="button"], li').forEach((el) => {
-          // visible-ish
-          const r = el.getBoundingClientRect();
-          if (r.width < 8 || r.height < 8) return;
+  let container = null;
+  for (const l of labelCandidates) {
+    container = pickContainer(l);
+    if (container) break;
+  }
 
-          // label sources
-          const aria = el.getAttribute && el.getAttribute("aria-label");
-const title = el.getAttribute && el.getAttribute("title");
-const txt = (el.innerText || el.textContent || "").trim();
+  if (!container) {
+    const blocks = Array.from(document.querySelectorAll(
+      "[data-testid*='variant'],[data-testid*='product-variant'],[class*='variant'],[class*='Variant'],[class*='swatch'],[class*='Swatch']"
+    )).filter(b => !isBadRegion(b));
+    container = blocks.find(b => b.querySelectorAll("button, li, label, input[type='radio']").length >= 2) || null;
+  }
 
-// swatch içinde img varsa alt/title al
-const img = el.querySelector && el.querySelector("img");
-const imgAlt = img && (img.getAttribute("alt") || img.getAttribute("title")) || "";
+  if (!container) return [];
 
-// input varsa value/aria al
-const input = el.querySelector && el.querySelector("input");
-const inputVal = input && (input.getAttribute("value") || input.getAttribute("aria-label")) || "";
+  const raw = Array.from(container.querySelectorAll("button, li, label, div[role='button'], span[role='button'], input[type='radio']"))
+    .filter(el => {
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) return false;
+      if (isBadRegion(el)) return false;
+      return true;
+    })
+    .map(el => {
+      const aria = el.getAttribute && el.getAttribute("aria-label");
+      const title = el.getAttribute && el.getAttribute("title");
+      const txt = (el.innerText || el.textContent || "").trim();
 
-// data-* kaynakları
-const dataVal =
-  (el.getAttribute && (el.getAttribute("data-value") || el.getAttribute("data-variant") || el.getAttribute("data-color") || el.getAttribute("data-name"))) || "";
+      const img = el.querySelector && el.querySelector("img");
+      const imgAlt = img && (img.getAttribute("alt") || img.getAttribute("title")) || "";
 
-const label = (aria || title || imgAlt || inputVal || dataVal || txt || "").trim();
-          if (!label) return;
+      const input = el.querySelector && el.querySelector("input");
+      const inputVal = input && (input.getAttribute("value") || input.getAttribute("aria-label")) || "";
 
-          // Heuristic: likely a color swatch label
-          const l = norm(label);
-          const looksLikeColor =
-            l.includes("renk") ||
-            l.includes("color") ||
-            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÃ„Â±rmÃ„Â±zÃ„Â±") ||
-            l.includes("yesil") || l.includes("yeÃ…Å¸il") || l.includes("gri") || l.includes("mor") ||
-            l.includes("pembe") || l.includes("kahve") || l.includes("lacivert") || l.includes("turuncu");
+      const dataVal =
+        (el.getAttribute && (el.getAttribute("data-value") || el.getAttribute("data-variant") || el.getAttribute("data-color") || el.getAttribute("data-name"))) || "";
 
-          // Also accept short labels (e.g., "Siyah", "Mavi") even without "renk"
-          if (!looksLikeColor && label.length > 25) return;
+      const label = (aria || title || imgAlt || inputVal || dataVal || txt || "").trim();
+      return { label, y: Math.round(el.getBoundingClientRect().top), x: Math.round(el.getBoundingClientRect().left) };
+    })
+    .filter(x => x.label);
 
-          // de-dupe by text+position signature
-          const sig = l + ":" + Math.round(r.left) + ":" + Math.round(r.top);
-          clickable.push({ label: label, sig });
-        });
+  const uniq = [];
+  const seen = new Set();
+  for (const o of raw.sort((a,b)=> (a.y-b.y) || (a.x-b.x))) {
+    const key = norm(o.label);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniq.push(o);
+  }
+
+  return uniq.slice(0, 10).map((o, i) => ({ idx: i, label: o.label }));
+});});
       }
 
       // Unique by signature
@@ -132,77 +140,94 @@ const label = (aria || title || imgAlt || inputVal || dataVal || txt || "").trim
   async selectColorByIndex(index) {
     // Re-run same discovery and click by index in one script to avoid stale refs
     const clicked = await this.I.executeScript(function (indexInner) {
-      const norm = (s) => {
-  const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
-  // TR -> ASCII
-  return x
-    .replace(/ı/g, "i")
-    .replace(/ğ/g, "g")
-    .replace(/ü/g, "u")
-    .replace(/ş/g, "s")
-    .replace(/ö/g, "o")
-    .replace(/ç/g, "c");
-};
+  const norm = (s) => {
+    const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+    return x
+      .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
+      .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
+  };
 
-      const regionSelectors = [
-        '[data-testid*="color"]',
-        '[class*="color"]',
-        '[class*="Colour"]',
-        '[aria-label*="Renk"]',
-        '[id*="color"]'
-      ];
+  function isBadRegion(el) {
+    if (!el || !el.closest) return false;
+    return !!el.closest("header,nav,footer,[data-testid*='header'],[data-testid*='footer']");
+  }
 
-      const regions = [];
-      for (const sel of regionSelectors) {
-        document.querySelectorAll(sel).forEach((el) => regions.push(el));
-      }
-      const scope = regions.length ? regions : [document];
+  const labelCandidates = Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span,p,dt,dd,label,strong,b"))
+    .filter(el => {
+      const t = norm(el.innerText || el.textContent);
+      return t === "renk" || t.startsWith("renk ");
+    })
+    .slice(0, 10);
 
-      const clickable = [];
-      for (const root of scope) {
-        root.querySelectorAll('button, a, div[role="button"], span[role="button"], li').forEach((el) => {
-          const r = el.getBoundingClientRect();
-          if (r.width < 8 || r.height < 8) return;
+  function pickContainer(el) {
+    let cur = el;
+    for (let i = 0; i < 6 && cur; i++) {
+      const options = cur.querySelectorAll("button, li, label, div[role='button'], span[role='button'], input[type='radio']");
+      if (options && options.length >= 2 && !isBadRegion(cur)) return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  }
 
-          const aria = el.getAttribute && el.getAttribute("aria-label");
-          const title = el.getAttribute && el.getAttribute("title");
-          const txt = (el.innerText || el.textContent || "").trim();
-          const label = (aria || title || txt || "").trim();
-          if (!label) return;
+  let container = null;
+  for (const l of labelCandidates) {
+    container = pickContainer(l);
+    if (container) break;
+  }
 
-          const l = norm(label);
-          const looksLikeColor =
-            l.includes("renk") || l.includes("color") ||
-            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÃ„Â±rmÃ„Â±zÃ„Â±") ||
-            l.includes("yesil") || l.includes("yeÃ…Å¸il") || l.includes("gri") || l.includes("mor") ||
-            l.includes("pembe") || l.includes("kahve") || l.includes("lacivert") || l.includes("turuncu");
+  if (!container) {
+    const blocks = Array.from(document.querySelectorAll(
+      "[data-testid*='variant'],[data-testid*='product-variant'],[class*='variant'],[class*='Variant'],[class*='swatch'],[class*='Swatch']"
+    )).filter(b => !isBadRegion(b));
+    container = blocks.find(b => b.querySelectorAll("button, li, label, input[type='radio']").length >= 2) || null;
+  }
 
-          if (!looksLikeColor && label.length > 25) return;
+  if (!container) return null;
 
-          const sig = l + ":" + Math.round(r.left) + ":" + Math.round(r.top);
-          clickable.push({ el, label, sig });
-        });
-      }
+  const nodes = Array.from(container.querySelectorAll("button, li, label, div[role='button'], span[role='button'], input[type='radio']"))
+    .filter(el => {
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) return false;
+      if (isBadRegion(el)) return false;
+      return true;
+    })
+    .map(el => {
+      const aria = el.getAttribute && el.getAttribute("aria-label");
+      const title = el.getAttribute && el.getAttribute("title");
+      const txt = (el.innerText || el.textContent || "").trim();
 
-      const uniq = [];
-      const seen = new Set();
-      for (const c of clickable) {
-        if (seen.has(c.sig)) continue;
-        seen.add(c.sig);
-        uniq.push(c);
-      }
+      const img = el.querySelector && el.querySelector("img");
+      const imgAlt = img && (img.getAttribute("alt") || img.getAttribute("title")) || "";
 
-      const list = uniq.slice(0, 10);
-      const idx = Number(indexInner);
-      if (!Number.isFinite(idx) || idx < 0 || idx >= list.length) return null;
+      const input = el.querySelector && el.querySelector("input");
+      const inputVal = input && (input.getAttribute("value") || input.getAttribute("aria-label")) || "";
 
-      const t = list[idx];
-      try { t.el.scrollIntoView({ block: "center", inline: "center" }); } catch (_) {}
-      try { t.el.click(); } catch (_) { return null; }
-      return String(t.label || "");
-    }, index);
+      const dataVal =
+        (el.getAttribute && (el.getAttribute("data-value") || el.getAttribute("data-variant") || el.getAttribute("data-color") || el.getAttribute("data-name"))) || "";
 
-    if (clicked) {
+      const label = (aria || title || imgAlt || inputVal || dataVal || txt || "").trim();
+      return { el, label, y: Math.round(el.getBoundingClientRect().top), x: Math.round(el.getBoundingClientRect().left) };
+    })
+    .filter(x => x.label);
+
+  const uniq = [];
+  const seen = new Set();
+  for (const o of nodes.sort((a,b)=> (a.y-b.y) || (a.x-b.x))) {
+    const key = norm(o.label);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniq.push(o);
+  }
+
+  const list = uniq.slice(0, 10);
+  const idx = Number(indexInner);
+  if (!Number.isFinite(idx) || idx < 0 || idx >= list.length) return null;
+
+  const t = list[idx];
+  try { t.el.scrollIntoView({ block: "center", inline: "center" }); } catch (_) {}
+  try { t.el.click(); } catch (_) { return null; }
+  return String(t.label || "");
+}, index);if (clicked) {
       await this.I.wait(0.8);
       return String(clicked);
     }
