@@ -1,0 +1,67 @@
+﻿name: e2e
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+jobs:
+  codecept-e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      selenium:
+        image: selenium/standalone-chrome:4.23.1-20240727
+        ports:
+          - 4444:4444
+        options: >-
+          --shm-size=2g
+
+    env:
+      RUN_MODE: e2e
+      TESTS: tests/e2e/multi_url_add_remove_test.js
+      SELENIUM_HOST: localhost
+      SELENIUM_PORT: "4444"
+      SELENIUM_PATH: ""
+      BASE_URL: https://www.trendyol.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Wait Selenium
+        run: |
+          for i in {1..30}; do
+            curl -sSf http://localhost:4444/status >/dev/null && echo "Selenium OK" && exit 0
+            sleep 2
+          done
+          echo "Selenium did not become ready" && exit 1
+
+
+      - name: Prepare products.txt
+        run: |
+          if [ ! -f "products.txt" ] && [ -f "products.example.txt" ]; then
+            cp products.example.txt products.txt
+          fi
+          ls -la products*.txt || true
+      - name: Run tests
+        run: npx codeceptjs run --config ./codecept.conf.js --steps --verbose
+
+      - name: Upload artifacts (output)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: output
+          path: output
+
+
+
