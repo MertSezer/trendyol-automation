@@ -22,6 +22,9 @@ exports.config = {
       waitForTimeout: 30000,
       timeouts: { script: 90000, 'page load': 90000 },
 
+      connectionRetryCount: 3,
+      connectionRetryTimeout: 120000,
+
       capabilities: {
         browserName: 'chrome',
         platformName: 'LINUX',
