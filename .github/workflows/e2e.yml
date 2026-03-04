@@ -107,3 +107,4 @@ jobs:
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
