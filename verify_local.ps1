@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "=== Trendyol Automation: Local Verify ==="
@@ -20,7 +20,7 @@ Write-Host "Output cleaned."
 $cmd = "npx codeceptjs run tests/e2e/multi_url_add_remove_test.js --config .\codecept.ci.conf.js --steps --verbose"
 Write-Host "`nRunning: $cmd`n"
 
-Invoke-Expression $cmd 2>&1 |
+& npx codeceptjs run tests/e2e/multi_url_add_remove_test.js --config .\codecept.ci.conf.js --steps --verbose 2>&1 |
   Where-Object {
     $_ -notmatch "No connection to WebDriver Bidi was established" -and
     $_ -notmatch "Error \(Non-Terminated\).*WebDriver Bidi"
