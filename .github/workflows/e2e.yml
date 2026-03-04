@@ -63,7 +63,7 @@ jobs:
           fi
           ls -la products*.txt || true
 
-      - name: Selenium preflight
+            - name: Selenium preflight
         shell: bash
         run: |
           echo "== /status =="
@@ -73,19 +73,7 @@ jobs:
           curl -s http://localhost:4444/wd/hub/status || true
           echo ""
           echo "== try create session =="
-          cat > /tmp/payload.json <<'JSON'
-          {
-            "capabilities": {
-              "alwaysMatch": {
-                "browserName": "chrome",
-                "goog:chromeOptions": {
-                  "args": ["--headless=new","--no-sandbox","--disable-dev-shm-usage"]
-                }
-              }
-            }
-          }
-JSON
-          curl -s -X POST "http://localhost:4444/session" -H "Content-Type: application/json" --data @/tmp/payload.json || true
+          curl -s -X POST "http://localhost:4444/session" -H "Content-Type: application/json" --data '{"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":{"args":["--headless=new","--no-sandbox","--disable-dev-shm-usage"]}}}}' || true
           echo ""
 
       - name: Run tests
@@ -119,6 +107,7 @@ JSON
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
 
 
 
