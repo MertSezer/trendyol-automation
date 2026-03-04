@@ -1,4 +1,4 @@
-﻿name: e2e
+name: e2e
 
 on:
   push:
@@ -38,10 +38,10 @@ jobs:
           docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host -e SE_NODE_SESSION_TIMEOUT=300 -e SE_SESSION_REQUEST_TIMEOUT=300 -e SE_SESSION_RETRY_INTERVAL=2 selenium/standalone-chrome:latest
           docker ps -a | sed -n '1,30p'
 
-            - name: Wait Selenium
+      - name: Wait Selenium (status + session preflight)
         shell: bash
         run: |
-          echo "Waiting Selenium HTTP 200..."
+          echo "Waiting Selenium status endpoint..."
           if ! timeout 240 bash -lc 'until curl -fsS http://localhost:4444/status >/dev/null 2>&1 || curl -fsS http://localhost:4444/wd/hub/status >/dev/null 2>&1; do sleep 2; done'; then
             echo "Selenium status endpoint not reachable"
             docker logs selenium --tail 200 || true
@@ -49,15 +49,11 @@ jobs:
           fi
           echo "Selenium status reachable"
 
-          echo "Preflight: try create session (up to 3 attempts)"
-          cat > /tmp/payload.json <<'JSON'
-          {"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":{"args":["--headless=new","--no-sandbox","--disable-dev-shm-usage","--disable-gpu","--remote-debugging-pipe"]}}}}
-          JSON
-
+          echo "Preflight: try create session (3 attempts)"
           ok=0
           for i in 1 2 3; do
-            echo "Attempt ..."
-            if curl -fsS -X POST http://localhost:4444/session -H "Content-Type: application/json" --data @/tmp/payload.json >/tmp/session.json; then
+            echo "Attempt $i..."
+            if curl -fsS -X POST http://localhost:4444/session -H "Content-Type: application/json" --data "{\"capabilities\":{\"alwaysMatch\":{\"browserName\":\"chrome\",\"goog:chromeOptions\":{\"args\":[\"--headless=new\",\"--no-sandbox\",\"--disable-dev-shm-usage\",\"--disable-gpu\",\"--remote-debugging-pipe\"]}}}}" >/tmp/session.json; then
               cat /tmp/session.json || true
               ok=1
               break
@@ -65,7 +61,7 @@ jobs:
             sleep 3
           done
 
-          if [ "" != "1" ]; then
+          if [ "$ok" != "1" ]; then
             echo "Could not create session via /session"
             docker logs selenium --tail 200 || true
             exit 1
