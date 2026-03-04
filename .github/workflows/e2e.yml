@@ -38,16 +38,14 @@ jobs:
           docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host -e SE_NODE_SESSION_TIMEOUT=300 -e SE_SESSION_REQUEST_TIMEOUT=300 -e SE_SESSION_RETRY_INTERVAL=2 selenium/standalone-chrome:latest
           docker ps -a | sed -n '1,30p'
 
-      - name: Wait Selenium
+            - name: Wait Selenium
         shell: bash
         run: |
-          for i in {1..120}; do
-            if curl -s http://localhost:4444/status | grep -q '"ready":true'; then
-              echo "Selenium ready:true"
-              exit 0
-            fi
-            sleep 2
-          done
+          echo "Waiting Selenium ready:true via /status"
+          if timeout 240 bash -lc 'until curl -fsS http://localhost:4444/status | grep -q "\"ready\":true"; do sleep 2; done'; then
+            echo "Selenium ready:true"
+            exit 0
+          fi
           echo "Selenium did not become ready:true"
           docker logs selenium --tail 200 || true
           exit 1
@@ -78,3 +76,4 @@ jobs:
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
