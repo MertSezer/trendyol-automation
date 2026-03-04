@@ -62,12 +62,10 @@ class ReportHelper {
     lines.push('');
 
     for (const s of this.run.scenarios) {
-      lines.push('- **' + s.title + '** — ' + String(s.status).toUpperCase() + ' (' + String(s.durationMs) + ' ms)');
+      lines.push('- **' + s.title + '** â€” ' + String(s.status).toUpperCase() + ' (' + String(s.durationMs) + ' ms)');
       if (s.error) lines.push('  - Error: ' + String(s.error).slice(0, 300));
       if (s.screenshot) lines.push('  - Screenshot: ' + String(s.screenshot));
-    }
-
-    // Optional: Per-URL timing table (from this.run.runs)
+    }    // Optional: Per-URL timing table (from this.run.runs)
     if (Array.isArray(this.run.runs) && this.run.runs.length) {
       lines.push('');
       lines.push('## Runs (Per URL Timings)');
@@ -84,12 +82,11 @@ class ReportHelper {
         const cart = String(r.cartMs ?? '');
         const rem = String(r.removeMs ?? '');
         const url = String(r.url ?? '');
-        lines.push(|  |  |  |  |  |  |  |  |);
+        lines.push('| ' + idx + ' | ' + st + ' | ' + total + ' | ' + open + ' | ' + add + ' | ' + cart + ' | ' + rem + ' | ' + url + ' |');
       }
     }
 
-    fs.writeFileSync(p, lines.join('\\n'), 'utf8');
-  }
+    fs.writeFileSync(p, lines.join('\n'), 'utf8');}
 
   _before() {
     if (!this.run.startedAt) this.run.startedAt = new Date().toISOString();
