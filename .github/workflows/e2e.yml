@@ -91,8 +91,7 @@ jobs:
             else
               echo "No output/summary.md found"
             fi
-          } >> "\"
-
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload artifacts (output)
         if: always()
         uses: actions/upload-artifact@v4
@@ -107,4 +106,5 @@ jobs:
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
 
