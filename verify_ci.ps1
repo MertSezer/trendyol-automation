@@ -3,27 +3,33 @@
 
 $repo = "MertSezer/trendyol-automation"
 $artifactName = "output"
-$scan = 20
+$scan = 30
 
-Write-Host "=== Trendyol Automation: CI Verify (artifact-aware) ==="
+Write-Host "=== Trendyol Automation: CI Verify (download-probe) ==="
 
-# Get last N runs
-$runs = gh run list --repo $repo --limit $scan --json databaseId,displayTitle,createdAt -q ".[] | @json" |
-  ForEach-Object { $_ | ConvertFrom-Json }
-
-if (-not $runs -or $runs.Count -eq 0) { throw "No runs found" }
+# Get last N run IDs
+$ids = gh run list --repo $repo --limit $scan --json databaseId -q ".[].databaseId"
+if (-not $ids) { throw "No runs found" }
 
 $target = $null
-foreach ($r in $runs) {
-  $id = $r.databaseId
-  $j = gh run view $id --repo $repo --json artifacts -q ".artifacts[].name" 2>$null
-  if ($LASTEXITCODE -ne 0) { continue }
+$dest = $null
 
-  $names = @()
-  if ($j) { $names = $j -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ } }
+foreach ($id in $ids) {
+  $tryDest = ".\_ci_artifacts\output_$id"
+  Remove-Item -Recurse -Force $tryDest -ErrorAction SilentlyContinue
 
-  if ($names -contains $artifactName) {
+  # Try download; capture output to detect "no valid artifacts"
+  $out = gh run download $id --repo $repo -n $artifactName -D $tryDest 2>&1
+  $text = ($out | Out-String)
+
+  if ($text -match "no valid artifacts found") {
+    continue
+  }
+
+  # If folder has summary.json, we are good
+  if (Test-Path (Join-Path $tryDest "summary.json")) {
     $target = $id
+    $dest = $tryDest
     break
   }
 }
@@ -32,17 +38,10 @@ if (-not $target) {
   throw "No run with artifact '$artifactName' found in last $scan runs."
 }
 
-Write-Host "Using run id: $target (has artifact '$artifactName')"
-
-$dest = ".\_ci_artifacts\output_$target"
-Remove-Item -Recurse -Force $dest -ErrorAction SilentlyContinue
-
-gh run download $target --repo $repo -n $artifactName -D $dest | Out-Null
+Write-Host "Using run id: $target"
 Write-Host "Downloaded artifact to: $dest"
 
 $summaryPath = Join-Path $dest "summary.json"
-if (!(Test-Path $summaryPath)) { throw "Missing $summaryPath" }
-
 $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
 
 if (-not $summary.finishedAt) { throw "summary.json missing finishedAt" }
