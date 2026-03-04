@@ -29,10 +29,13 @@ module.exports = {
             '--no-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
-            '--headless=new'
+            '--headless=new',
+            '--remote-debugging-pipe',
+            '--disable-features=VizDisplayCompositor'
           ]
         }
       }
     }
   }
 };
+
