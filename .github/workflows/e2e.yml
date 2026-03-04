@@ -59,7 +59,7 @@ jobs:
           fi
           ls -la products*.txt || true
       - name: Run tests
-        run: npx codeceptjs run --config ./codecept.conf.js --steps --verbose
+        run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
 
 
       - name: Publish summary to Job Summary
@@ -81,6 +81,7 @@ jobs:
         with:
           name: output
           path: output
+
 
 
 
