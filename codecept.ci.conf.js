@@ -1,4 +1,4 @@
-﻿require('dotenv').config({ override: true });
+require('dotenv').config({ override: true });
 
 const isCI = String(process.env.CI || '').toLowerCase() === 'true';
 
@@ -29,13 +29,16 @@ exports.config = {
         browserName: 'chrome',
         platformName: 'LINUX',
         acceptInsecureCerts: true,
-        pageLoadStrategy: 'eager',
+        
+        webSocketUrl: true,
+pageLoadStrategy: 'eager',
         'goog:chromeOptions': {
           args: [
             '--no-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
-            ...(isCI ? ['--headless=new', '--remote-debugging-pipe', '--disable-features=VizDisplayCompositor'] : [])
+            
+            '--remote-debugging-pipe',...(isCI ? ['--headless=new', '--disable-features=VizDisplayCompositor'] : [])
           ]
         }
       }
