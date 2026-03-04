@@ -85,9 +85,7 @@ jobs:
             }
           }
 JSON
-          curl -s -X POST http://localhost:4444/session \
-            -H "Content-Type: application/json" \
-            --data @/tmp/payload.json || true
+          curl -s -X POST "http://localhost:4444/session" -H "Content-Type: application/json" --data @/tmp/payload.json || true
           echo ""
 
       - name: Run tests
@@ -105,7 +103,7 @@ JSON
             else
               echo "No output/summary.md found"
             fi
-          } >> "`$GITHUB_STEP_SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifacts (output)
         if: always()
@@ -121,5 +119,6 @@ JSON
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
 
 
