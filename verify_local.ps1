@@ -52,4 +52,5 @@ Write-Host ("Totals.totalMs: " + $summary.totals.totalMs)
 $shots = Get-ChildItem ".\output" -Filter "*_product.png" -ErrorAction SilentlyContinue
 Write-Host ("Product screenshots: " + ($shots | Measure-Object).Count)
 
-Write-Host "`n✅ Local verify OK"
+Write-Host "
+OK: Local verify passed"
