@@ -1,8 +1,8 @@
-﻿'use strict';
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
-
+const { buildRunsFromCaseReport } = require('../src/core/SummaryBuilder');
 class ReportHelper {
   constructor(config) {
     this.outputDir = (config && config.outputDir) || './output';
@@ -25,13 +25,27 @@ class ReportHelper {
     fs.mkdirSync(this.outputDir, { recursive: true });
   }
 
+
+  _augmentWithTimings() {
+    // Merge per-URL timings from case_report.json into summary.json (backwards compatible)
+    try {
+      const ext = buildRunsFromCaseReport(this.outputDir, 'case_report.json');
+      if (ext) {
+        this.run.runs = ext.runs;
+        this.run.totals = ext.totals;
+      }
+    } catch (_) {}
+  }
+
   _writeJson() {
+    this._augmentWithTimings();
     this._ensureDir();
     const p = path.join(this.outputDir, this.summaryFile);
     fs.writeFileSync(p, JSON.stringify(this.run, null, 2), 'utf8');
   }
 
   _writeMarkdown() {
+    this._augmentWithTimings();
     this._ensureDir();
     const p = path.join(this.outputDir, this.markdownFile);
 
