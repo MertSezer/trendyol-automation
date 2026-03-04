@@ -5,9 +5,8 @@ $repo = "MertSezer/trendyol-automation"
 $artifactName = "output"
 $scan = 30
 
-Write-Host "=== Trendyol Automation: CI Verify (download-probe) ==="
+Write-Host "=== Trendyol Automation: CI Verify (download-probe, resilient) ==="
 
-# Get last N run IDs
 $ids = gh run list --repo $repo --limit $scan --json databaseId -q ".[].databaseId"
 if (-not $ids) { throw "No runs found" }
 
@@ -18,20 +17,24 @@ foreach ($id in $ids) {
   $tryDest = ".\_ci_artifacts\output_$id"
   Remove-Item -Recurse -Force $tryDest -ErrorAction SilentlyContinue
 
-  # Try download; capture output to detect "no valid artifacts"
-  $out = gh run download $id --repo $repo -n $artifactName -D $tryDest 2>&1
-  $text = ($out | Out-String)
+  $text = ""
+  try {
+    # Run download, capture BOTH streams
+    $out = & gh run download $id --repo $repo -n $artifactName -D $tryDest 2>&1
+    $text = ($out | Out-String)
+  } catch {
+    # gh throws on "no valid artifacts" in some versions; continue scanning
+    $text = (($_ | Out-String) + "`n")
+  }
 
-  if ($text -match "no valid artifacts found") {
+  # If download did not produce summary.json, move on
+  if (!(Test-Path (Join-Path $tryDest "summary.json"))) {
     continue
   }
 
-  # If folder has summary.json, we are good
-  if (Test-Path (Join-Path $tryDest "summary.json")) {
-    $target = $id
-    $dest = $tryDest
-    break
-  }
+  $target = $id
+  $dest = $tryDest
+  break
 }
 
 if (-not $target) {
