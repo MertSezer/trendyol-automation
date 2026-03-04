@@ -35,46 +35,43 @@ jobs:
         shell: bash
         run: |
           docker rm -f selenium 2>/dev/null || true
-          docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host -e SE_NODE_SESSION_TIMEOUT=300 -e SE_SESSION_REQUEST_TIMEOUT=300 -e SE_SESSION_RETRY_INTERVAL=2 selenium/standalone-chrome:latest
+          docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host \
+            -e SE_NODE_MAX_SESSIONS=2 \
+            -e SE_NODE_OVERRIDE_MAX_SESSIONS=true \
+            -e SE_NODE_SESSION_TIMEOUT=300 \
+            -e SE_SESSION_REQUEST_TIMEOUT=300 \
+            -e SE_SESSION_RETRY_INTERVAL=2 \
+            selenium/standalone-chrome:latest
           docker ps -a | sed -n '1,30p'
 
-      - name: Wait Selenium (status + session preflight)
+      - name: Wait Selenium (status + session preflight + close)
         shell: bash
         run: |
           echo "Waiting Selenium status endpoint..."
-          if ! timeout 240 bash -lc 'until curl -fsS http://localhost:4444/status >/dev/null 2>&1 || curl -fsS http://localhost:4444/wd/hub/status >/dev/null 2>&1; do sleep 2; done'; then
-            echo "Selenium status endpoint not reachable"
-            docker logs selenium --tail 200 || true
-            exit 1
-          fi
-          echo "Selenium status reachable"
+          timeout 240 bash -lc 'until curl -fsS http://localhost:4444/status >/dev/null 2>&1 || curl -fsS http://localhost:4444/wd/hub/status >/dev/null 2>&1; do sleep 2; done'
 
-          echo "Preflight: try create session (3 attempts)"
+          echo "Preflight: create session (3 attempts) then close it"
           ok=0
           for i in 1 2 3; do
             echo "Attempt $i..."
-            if curl -fsS -X POST http://localhost:4444/session -H "Content-Type: application/json" --data "{\"capabilities\":{\"alwaysMatch\":{\"browserName\":\"chrome\",\"goog:chromeOptions\":{\"args\":[\"--headless=new\",\"--no-sandbox\",\"--disable-dev-shm-usage\",\"--disable-gpu\",\"--remote-debugging-pipe\"]}}}}" >/tmp/session.json; then
-  cat /tmp/session.json || true
+            if curl -fsS -X POST http://localhost:4444/session -H "Content-Type: application/json" \
+              --data "{\"capabilities\":{\"alwaysMatch\":{\"browserName\":\"chrome\",\"goog:chromeOptions\":{\"args\":[\"--headless=new\",\"--no-sandbox\",\"--disable-dev-shm-usage\",\"--disable-gpu\",\"--remote-debugging-pipe\"]}}}}" \
+              >/tmp/session.json; then
 
-  sid=$(python3 - <<'PY'
-import json
-p="/tmp/session.json"
-d=json.load(open(p,"r",encoding="utf-8"))
-sid = d.get("sessionId") or d.get("value", {}).get("sessionId") or d.get("value", {}).get("session_id")
-print(sid or "")
-PY
-)
+              cat /tmp/session.json || true
 
-  if [ -n "$sid" ]; then
-    echo "Closing preflight session: $sid"
-    curl -fsS -X DELETE "http://localhost:4444/session/$sid" >/dev/null || true
-  else
-    echo "WARN: could not parse session id"
-  fi
+              # HEREDOC YOK: tek satır python -c ile sessionId al
+              sid=$(python3 -c "import json; d=json.load(open('/tmp/session.json','r',encoding='utf-8')); print(d.get('sessionId') or d.get('value',{}).get('sessionId') or '')" 2>/dev/null || true)
+              if [ -n "$sid" ]; then
+                echo "Closing preflight session: $sid"
+                curl -fsS -X DELETE "http://localhost:4444/session/$sid" >/dev/null || true
+              else
+                echo "WARN: could not parse session id"
+              fi
 
-  ok=1
-  break
-fi
+              ok=1
+              break
+            fi
             sleep 3
           done
 
@@ -84,7 +81,7 @@ fi
             exit 1
           fi
 
-          echo "Selenium ready for sessions âœ…"
+          echo "Selenium ready for sessions ✅"
 
       - name: Prepare products.txt
         shell: bash
