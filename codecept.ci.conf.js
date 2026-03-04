@@ -5,6 +5,8 @@ const isCI = String(process.env.CI || '').toLowerCase() === 'true';
 exports.config = {
   tests: process.env.TESTS || './tests/**/*.js',
   output: './output',
+
+  bootstrap: './tests/bootstrap.js',
 helpers: {
     CaseReport: { require: './helpers/caseReport.js', outputDir: './output', file: 'case_report.json' },
     ReportHelper: { require: './helpers/report.js', outputDir: './output', summaryFile: 'summary.json' },
