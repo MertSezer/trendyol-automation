@@ -54,10 +54,27 @@ jobs:
           for i in 1 2 3; do
             echo "Attempt $i..."
             if curl -fsS -X POST http://localhost:4444/session -H "Content-Type: application/json" --data "{\"capabilities\":{\"alwaysMatch\":{\"browserName\":\"chrome\",\"goog:chromeOptions\":{\"args\":[\"--headless=new\",\"--no-sandbox\",\"--disable-dev-shm-usage\",\"--disable-gpu\",\"--remote-debugging-pipe\"]}}}}" >/tmp/session.json; then
-              cat /tmp/session.json || true
-              ok=1
-              break
-            fi
+  cat /tmp/session.json || true
+
+  sid=$(python3 - <<'PY'
+import json
+p="/tmp/session.json"
+d=json.load(open(p,"r",encoding="utf-8"))
+sid = d.get("sessionId") or d.get("value", {}).get("sessionId") or d.get("value", {}).get("session_id")
+print(sid or "")
+PY
+)
+
+  if [ -n "$sid" ]; then
+    echo "Closing preflight session: $sid"
+    curl -fsS -X DELETE "http://localhost:4444/session/$sid" >/dev/null || true
+  else
+    echo "WARN: could not parse session id"
+  fi
+
+  ok=1
+  break
+fi
             sleep 3
           done
 
@@ -67,7 +84,7 @@ jobs:
             exit 1
           fi
 
-          echo "Selenium ready for sessions ✅"
+          echo "Selenium ready for sessions âœ…"
 
       - name: Prepare products.txt
         shell: bash
