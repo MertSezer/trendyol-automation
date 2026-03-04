@@ -78,8 +78,8 @@ class TopColorsAddRemoveFlow {
           const looksLikeColor =
             l.includes("renk") ||
             l.includes("color") ||
-            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kırmızı") ||
-            l.includes("yesil") || l.includes("yeşil") || l.includes("gri") || l.includes("mor") ||
+            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÄ±rmÄ±zÄ±") ||
+            l.includes("yesil") || l.includes("yeÅŸil") || l.includes("gri") || l.includes("mor") ||
             l.includes("pembe") || l.includes("kahve") || l.includes("lacivert") || l.includes("turuncu");
 
           // Also accept short labels (e.g., "Siyah", "Mavi") even without "renk"
@@ -141,8 +141,8 @@ class TopColorsAddRemoveFlow {
           const l = norm(label);
           const looksLikeColor =
             l.includes("renk") || l.includes("color") ||
-            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kırmızı") ||
-            l.includes("yesil") || l.includes("yeşil") || l.includes("gri") || l.includes("mor") ||
+            l.includes("siyah") || l.includes("beyaz") || l.includes("mavi") || l.includes("kÄ±rmÄ±zÄ±") ||
+            l.includes("yesil") || l.includes("yeÅŸil") || l.includes("gri") || l.includes("mor") ||
             l.includes("pembe") || l.includes("kahve") || l.includes("lacivert") || l.includes("turuncu");
 
           if (!looksLikeColor && label.length > 25) return;
@@ -194,9 +194,9 @@ class TopColorsAddRemoveFlow {
 
     // discover colors
     const colors = await this.discoverColors();
-    this._crAdd("colors:discovered", { idx, url, count: colors.length, colors });
-
-    if (!colors.length) {
+this.I.say("COLORS_FOUND=" + String(colors.length));
+this.I.say("COLORS_SAMPLE=" + colors.slice(0, 5).map(x => x.label).join(" | "));
+this._crAdd("colors:discovered", { idx, url, count: colors.length, colors });if (!colors.length) {
       const totalMs = this._now() - tAll0;
       this._crAdd("timing:url", { idx, url, openMs, addMs: 0, cartMs: 0, removeMs: 0, totalMs, status: "skip" });
       this._crAdd("url:skip", { idx, url, reason: "no colors discovered", title: meta.title });
