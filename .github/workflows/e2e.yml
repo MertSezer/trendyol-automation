@@ -11,7 +11,7 @@ jobs:
 
     services:
       selenium:
-        image: selenium/standalone-chrome:4.23.1-20240727
+        image: selenium/standalone-chrome:latest
         ports:
           - 4444:4444
         options: >-
@@ -73,6 +73,7 @@ jobs:
         with:
           name: output
           path: output
+
 
 
 
