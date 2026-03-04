@@ -63,7 +63,7 @@ jobs:
           fi
           ls -la products*.txt || true
 
-            - name: Selenium preflight
+      - name: Selenium preflight
         shell: bash
         run: |
           echo "== /status =="
@@ -91,7 +91,7 @@ jobs:
             else
               echo "No output/summary.md found"
             fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          } >> "\"
 
       - name: Upload artifacts (output)
         if: always()
@@ -107,7 +107,3 @@ jobs:
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
-
-
-
-
