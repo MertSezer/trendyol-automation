@@ -8,16 +8,15 @@ on:
 jobs:
   codecept-e2e:
     runs-on: ubuntu-latest
-          --shm-size=2g --privileged --ipc=host
 
     env:
       RUN_MODE: e2e
       TESTS: tests/e2e/multi_url_add_remove_test.js
       SELENIUM_HOST: localhost
       SELENIUM_PORT: "4444"
-      CI: "true"
-      SELENIUM_PATH: ""
+      SELENIUM_PATH: "/"
       BASE_URL: https://www.trendyol.com
+      CI: "true"
 
     steps:
       - name: Checkout
@@ -29,12 +28,16 @@ jobs:
           node-version: "24"
           cache: "npm"
 
-      
+      - name: Install deps
+        run: npm ci
+
       - name: Start Selenium container
         shell: bash
         run: |
           docker run -d --name selenium -p 4444:4444 --shm-size=2g --privileged --ipc=host selenium/standalone-chrome:latest
-          docker ps -a | sed -n '1,5p'      - name: Wait Selenium
+          docker ps -a | sed -n '1,10p'
+
+      - name: Wait Selenium
         shell: bash
         run: |
           for i in {1..60}; do
@@ -49,10 +52,11 @@ jobs:
             sleep 2
           done
           echo "Selenium did not become ready"
+          docker logs selenium --tail 200 || true
           exit 1
 
-
       - name: Prepare products.txt
+        shell: bash
         run: |
           if [ ! -f "products.txt" ] && [ -f "products.example.txt" ]; then
             cp products.example.txt products.txt
@@ -81,12 +85,14 @@ jobs:
             }
           }
 JSON
-          curl -s -X POST http://localhost:4444/session -H "Content-Type: application/json" --data @/tmp/payload.json || true
+          curl -s -X POST http://localhost:4444/session \
+            -H "Content-Type: application/json" \
+            --data @/tmp/payload.json || true
           echo ""
 
       - name: Run tests
+        shell: bash
         run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
-
 
       - name: Publish summary to Job Summary
         if: always()
@@ -99,7 +105,7 @@ JSON
             else
               echo "No output/summary.md found"
             fi
-          } >> "\"
+          } >> ""
 
       - name: Upload artifacts (output)
         if: always()
@@ -107,15 +113,11 @@ JSON
         with:
           name: output
           path: output
+          if-no-files-found: ignore
 
-
-
-
-
-
-
-
-
-
-
-
+      - name: Cleanup selenium
+        if: always()
+        shell: bash
+        run: |
+          docker logs selenium --tail 200 || true
+          docker rm -f selenium || true
