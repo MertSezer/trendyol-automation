@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host "=== Trendyol Automation: Local Verify ==="
+Write-Host "=== Trendyol Automation: Local Verify ==="`n`nif (-not $env:TESTS) { $env:TESTS = "tests/e2e/multi_url_add_remove_test.js" }
 
 # 1) Ensure products.txt exists
 if (!(Test-Path ".\products.txt") -and (Test-Path ".\products.example.txt")) {
@@ -17,10 +17,10 @@ New-Item -ItemType Directory -Force ".\output" | Out-Null
 Write-Host "Output cleaned."
 
 # 3) Run test (filter benign BiDi noise)
-$cmd = "npx codeceptjs run tests/e2e/multi_url_add_remove_test.js --config .\codecept.ci.conf.js --steps --verbose"
+$cmd = "npx codeceptjs run $env:TESTS --config .\codecept.ci.conf.js --steps --verbose"
 Write-Host "`nRunning: $cmd`n"
 
-& npx codeceptjs run tests/e2e/multi_url_add_remove_test.js --config .\codecept.ci.conf.js --steps --verbose 2>&1 |
+& npx codeceptjs run $env:TESTS --config .\codecept.ci.conf.js --steps --verbose 2>&1 |
   Where-Object {
     $_ -notmatch "No connection to WebDriver Bidi was established" -and
     $_ -notmatch "Error \(Non-Terminated\).*WebDriver Bidi"
