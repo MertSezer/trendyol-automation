@@ -62,7 +62,7 @@ class ReportHelper {
     lines.push('');
 
     for (const s of this.run.scenarios) {
-      lines.push('- **' + s.title + '** ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ' + String(s.status).toUpperCase() + ' (' + String(s.durationMs) + ' ms)');
+      lines.push('- **' + s.title + '** ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ' + String(s.status).toUpperCase() + ' (' + String(s.durationMs) + ' ms)');
       if (s.error) lines.push('  - Error: ' + String(s.error).slice(0, 300));
       if (s.screenshot) lines.push('  - Screenshot: ' + String(s.screenshot));
     }    // Optional: Per-URL timing table (from this.run.runs)
