@@ -6,7 +6,9 @@ exports.config = {
   tests: process.env.TESTS || './tests/**/*.js',
   output: './output',
 
-  helpers: {
+  
+  bootstrap: './tests/bootstrap.js',
+helpers: {
     CaseReport: { require: './helpers/caseReport.js', outputDir: './output', file: 'case_report.json' },
     ReportHelper: { require: './helpers/report.js', outputDir: './output', summaryFile: 'summary.json' },
 
