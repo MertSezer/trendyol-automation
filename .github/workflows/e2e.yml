@@ -59,6 +59,18 @@ jobs:
             cp products.example.txt products.txt
           fi
           ls -la products*.txt || true
+
+      - name: Selenium preflight
+        shell: bash
+        run: |
+          echo "== /status =="
+          curl -s http://localhost:4444/status || true
+          echo ""
+          echo "== try create session =="
+          curl -s -X POST http://localhost:4444/session \
+            -H "Content-Type: application/json" \
+            -d '{"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":{"args":["--headless=new","--no-sandbox","--disable-dev-shm-usage"]}}}}' || true
+          echo ""
       - name: Run tests
         run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
 
@@ -82,6 +94,7 @@ jobs:
         with:
           name: output
           path: output
+
 
 
 
