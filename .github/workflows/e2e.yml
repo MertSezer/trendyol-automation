@@ -22,6 +22,7 @@ jobs:
       TESTS: tests/e2e/multi_url_add_remove_test.js
       SELENIUM_HOST: localhost
       SELENIUM_PORT: "4444"
+      CI: "true"
       SELENIUM_PATH: ""
       BASE_URL: https://www.trendyol.com
 
@@ -81,6 +82,7 @@ jobs:
         with:
           name: output
           path: output
+
 
 
 
