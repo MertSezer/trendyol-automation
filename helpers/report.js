@@ -62,7 +62,7 @@ class ReportHelper {
     lines.push('');
 
     for (const s of this.run.scenarios) {
-      lines.push('- **' + s.title + '** — ' + String(s.status).toUpperCase() + ' (' + String(s.durationMs) + ' ms)');
+      lines.push('- **' + s.title + '** â€” ' + String(s.status).toUpperCase() + ' (' + String(s.durationMs) + ' ms)');
       if (s.error) lines.push('  - Error: ' + String(s.error).slice(0, 300));
       if (s.screenshot) lines.push('  - Screenshot: ' + String(s.screenshot));
     }
@@ -107,6 +107,8 @@ class ReportHelper {
   }
 
   _finishTest() {
+    if (!this.run.finishedAt) this.run.finishedAt = new Date().toISOString();
+    this.run.durationMs = this.run.startedAt ? (Date.now() - Date.parse(this.run.startedAt)) : 0;
     this._writeJson();
     this._writeMarkdown();
   }
