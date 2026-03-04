@@ -43,8 +43,12 @@ jobs:
         shell: bash
         run: |
           for i in {1..60}; do
-            if curl -s http://localhost:4444/status | grep -q '"ready":true'; then
-              echo "Selenium ready"
+            if curl -sSf http://localhost:4444/status >/dev/null; then
+              echo "Selenium OK (/status)"
+              exit 0
+            fi
+            if curl -sSf http://localhost:4444/wd/hub/status >/dev/null; then
+              echo "Selenium OK (/wd/hub/status)"
               exit 0
             fi
             sleep 2
@@ -66,11 +70,25 @@ jobs:
           echo "== /status =="
           curl -s http://localhost:4444/status || true
           echo ""
-          echo "== try create session =="
-          curl -s -X POST http://localhost:4444/session \
-            -H "Content-Type: application/json" \
-            -d '{"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":{"args":["--headless=new","--no-sandbox","--disable-dev-shm-usage"]}}}}' || true
+          echo "== /wd/hub/status =="
+          curl -s http://localhost:4444/wd/hub/status || true
           echo ""
+          echo "== try create session =="
+          cat > /tmp/payload.json <<'JSON'
+          {
+            "capabilities": {
+              "alwaysMatch": {
+                "browserName": "chrome",
+                "goog:chromeOptions": {
+                  "args": ["--headless=new","--no-sandbox","--disable-dev-shm-usage"]
+                }
+              }
+            }
+          }
+JSON
+          curl -s -X POST http://localhost:4444/session -H "Content-Type: application/json" --data @/tmp/payload.json || true
+          echo ""
+
       - name: Run tests
         run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
 
@@ -94,6 +112,7 @@ jobs:
         with:
           name: output
           path: output
+
 
 
 
