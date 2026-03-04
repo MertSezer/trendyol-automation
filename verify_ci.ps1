@@ -2,17 +2,42 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $repo = "MertSezer/trendyol-automation"
+$artifactName = "output"
+$scan = 20
 
-Write-Host "=== Trendyol Automation: CI Verify ==="
+Write-Host "=== Trendyol Automation: CI Verify (artifact-aware) ==="
 
-$rid = gh run list --repo $repo --limit 1 --json databaseId -q ".[0].databaseId"
-if (-not $rid) { throw "Could not get latest run id" }
-Write-Host "Latest run id: $rid"
+# Get last N runs
+$runs = gh run list --repo $repo --limit $scan --json databaseId,displayTitle,createdAt -q ".[] | @json" |
+  ForEach-Object { $_ | ConvertFrom-Json }
 
-$dest = ".\_ci_artifacts\output_$rid"
+if (-not $runs -or $runs.Count -eq 0) { throw "No runs found" }
+
+$target = $null
+foreach ($r in $runs) {
+  $id = $r.databaseId
+  $j = gh run view $id --repo $repo --json artifacts -q ".artifacts[].name" 2>$null
+  if ($LASTEXITCODE -ne 0) { continue }
+
+  $names = @()
+  if ($j) { $names = $j -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ } }
+
+  if ($names -contains $artifactName) {
+    $target = $id
+    break
+  }
+}
+
+if (-not $target) {
+  throw "No run with artifact '$artifactName' found in last $scan runs."
+}
+
+Write-Host "Using run id: $target (has artifact '$artifactName')"
+
+$dest = ".\_ci_artifacts\output_$target"
 Remove-Item -Recurse -Force $dest -ErrorAction SilentlyContinue
 
-gh run download $rid --repo $repo -n output -D $dest | Out-Null
+gh run download $target --repo $repo -n $artifactName -D $dest | Out-Null
 Write-Host "Downloaded artifact to: $dest"
 
 $summaryPath = Join-Path $dest "summary.json"
