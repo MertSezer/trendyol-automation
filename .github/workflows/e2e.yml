@@ -31,27 +31,27 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Start Selenium container
+            - name: Start Selenium container
         shell: bash
         run: |
-          docker run -d --name selenium -p 4444:4444 --shm-size=2g --privileged --ipc=host selenium/standalone-chrome:latest
-          docker ps -a | sed -n '1,10p'
+          docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host 
+            -e SE_NODE_SESSION_TIMEOUT=300 
+            -e SE_SESSION_REQUEST_TIMEOUT=300 
+            -e SE_SESSION_RETRY_INTERVAL=2 
+            selenium/standalone-chrome:latest
+          docker ps -a | sed -n '1,20p'
 
-      - name: Wait Selenium
+            - name: Wait Selenium
         shell: bash
         run: |
-          for i in {1..60}; do
-            if curl -sSf http://localhost:4444/status >/dev/null; then
-              echo "Selenium OK (/status)"
-              exit 0
-            fi
-            if curl -sSf http://localhost:4444/wd/hub/status >/dev/null; then
-              echo "Selenium OK (/wd/hub/status)"
+          for i in {1..120}; do
+            if curl -s http://localhost:4444/status | grep -q '"ready":true'; then
+              echo "Selenium ready:true"
               exit 0
             fi
             sleep 2
           done
-          echo "Selenium did not become ready"
+          echo "Selenium did not become ready:true"
           docker logs selenium --tail 200 || true
           exit 1
 
@@ -106,5 +106,6 @@ jobs:
         run: |
           docker logs selenium --tail 200 || true
           docker rm -f selenium || true
+
 
 
