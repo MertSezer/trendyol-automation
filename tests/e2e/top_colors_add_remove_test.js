@@ -11,8 +11,9 @@ function getCaseReport() {
 }
 
 Scenario("Top colors -> select -> add to cart -> remove (per URL)", async ({ I }) => {
-  const urls = readProducts("products.txt");
-  if (!urls.length) {
+    const dataset = process.env.DATASET || "datasets/demo.txt";
+  const urls = readProducts(dataset);
+  I.say("DATASET=" + dataset);if (!urls.length) {
     I.say("No URLs found in products.txt");
     return;
   }
