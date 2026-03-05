@@ -60,7 +60,7 @@ jobs:
 
               cat /tmp/session.json || true
 
-              # HEREDOC YOK: tek satÃ„Â±r python -c ile sessionId al
+              # HEREDOC YOK: tek satÃƒâ€Ã‚Â±r python -c ile sessionId al
               sid=$(python3 -c "import json; d=json.load(open('/tmp/session.json','r',encoding='utf-8')); print(d.get('sessionId') or d.get('value',{}).get('sessionId') or '')" 2>/dev/null || true)
               if [ -n "$sid" ]; then
                 echo "Closing preflight session: $sid"
@@ -81,7 +81,7 @@ jobs:
             exit 1
           fi
 
-          echo "Selenium ready for sessions Ã¢Å“â€¦"
+          echo "Selenium ready for sessions ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦"
 
       - name: Prepare products.txt
         shell: bash
@@ -109,10 +109,30 @@ jobs:
         if: always()
         shell: bash
         run: |
+          echo "## Trendyol E2E Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f output/quality_gate.json ]; then
+            ok=$(node -p "require('./output/quality_gate.json').ok" 2>/dev/null || echo "")
+            skip=$(node -p "require('./output/quality_gate.json').skip" 2>/dev/null || echo "")
+            total=$(node -p "require('./output/quality_gate.json').total" 2>/dev/null || echo "")
+            skipPct=$(node -p "require('./output/quality_gate.json').skipPct" 2>/dev/null || echo "")
+            minOk=$(node -p "require('./output/quality_gate.json').minOk" 2>/dev/null || echo "")
+            maxSkipPct=$(node -p "require('./output/quality_gate.json').maxSkipPct" 2>/dev/null || echo "")
+
+            echo "**QUALITY_GATE:** PASS ✅" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "- ok: \`$ok\` (min: \`$minOk\`)" >> "$GITHUB_STEP_SUMMARY"
+            echo "- skip: \`$skip\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- total: \`$total\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- skipPct: \`$skipPct%\` (max: \`$maxSkipPct%\`)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
           if [ -f output/summary.md ]; then
             cat output/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "summary.md not found" >> "$GITHUB_STEP_SUMMARY"
+            echo "_summary.md not found_" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload artifacts (output)
