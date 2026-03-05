@@ -3,6 +3,17 @@
 const fs = require("fs");
 const path = require("path");
 
+function shortUrl(u) {
+  try {
+    const x = new URL(u);
+    const parts = x.pathname.split("/").filter(Boolean);
+    const tail = parts.slice(-2).join("/");
+    return `${x.hostname}/${tail || parts.slice(-1)[0] || ""}`;
+  } catch {
+    return u;
+  }
+}
+
 /**
  * Render a human-readable summary.md from output/case_report.json.
  * - Groups by URL idx
@@ -75,15 +86,33 @@ function main() {
 
   const rows = Array.from(perUrl.values()).sort((a, b) => a.idx - b.idx);
 
+  // Totals
+  let okCount = 0, skipCount = 0;
+  const okTotals = [];
+  for (const r of rows) {
+    if (r.status === "OK") {
+      okCount++;
+      const n = Number(r.totalMs);
+      if (Number.isFinite(n)) okTotals.push(n);
+    } else if (r.status === "SKIP") {
+      skipCount++;
+    }
+  }
+  const avgTotalMs = okTotals.length ? Math.round(okTotals.reduce((a, b) => a + b, 0) / okTotals.length) : "";
+
   const now = new Date().toISOString();
   let md = `# Test Summary\n\n`;
   md += `Generated: \`${now}\`\n\n`;
+  md += `**OK:** ${okCount} • **SKIP:** ${skipCount}`;
+  if (avgTotalMs !== "") md += ` • **Avg totalMs (OK):** ${avgTotalMs}`;
+  md += `\n\n`;
+
   md += `| # | Status | totalMs | openMs | addMs | cartMs | removeMs | reason | url |\n`;
   md += `|---:|:------|-------:|------:|-----:|------:|--------:|:------|:----|\n`;
 
   for (const r of rows) {
     const reason = (r.status === "SKIP" ? (r.reason || "skipped") : "");
-    const safeUrl = r.url ? r.url.replace(/\|/g, "\\|") : "";
+    const safeUrl = r.url ? shortUrl(r.url).replace(/\|/g, "\\|") : "";
     md += `| ${r.idx} | ${r.status} | ${r.totalMs ?? ""} | ${r.openMs ?? ""} | ${r.addMs ?? ""} | ${r.cartMs ?? ""} | ${r.removeMs ?? ""} | ${reason.replace(/\|/g, "\\|")} | ${safeUrl} |\n`;
   }
 
