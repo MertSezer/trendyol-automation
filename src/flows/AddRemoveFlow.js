@@ -1,12 +1,16 @@
 "use strict";
 
+
+const { ResilientUi } = require("../core/ResilientUi");
 const { UiEngine } = require("../core/UiEngine");
 const { ProductPage } = require("../pages/ProductPage");
 const { CartPage } = require("../pages/CartPage");
 
 class AddRemoveFlow {
   constructor({ I, caseReport }) {
-    this.I = I;
+    
+    this.ui = new ResilientUi(I);
+this.I = I;
     this.caseReport = caseReport || null;
     this.engine = new UiEngine({ I });
     this.product = new ProductPage({ I, engine: this.engine });
