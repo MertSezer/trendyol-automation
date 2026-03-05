@@ -112,7 +112,8 @@ function main() {
 
   for (const r of rows) {
     const reason = (r.status === "SKIP" ? (r.reason || "skipped") : "");
-    const safeUrl = r.url ? shortUrl(r.url).replace(/\|/g, "\\|") : "";
+        const short = r.url ? shortUrl(r.url) : "";
+    const safeUrl = r.url ? `[${short.replace(/\|/g, "\\|")}](${r.url.replace(/\)/g, "%29")})` : "";
     md += `| ${r.idx} | ${r.status} | ${r.totalMs ?? ""} | ${r.openMs ?? ""} | ${r.addMs ?? ""} | ${r.cartMs ?? ""} | ${r.removeMs ?? ""} | ${reason.replace(/\|/g, "\\|")} | ${safeUrl} |\n`;
   }
 
