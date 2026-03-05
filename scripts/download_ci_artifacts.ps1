@@ -1,9 +1,9 @@
-﻿param(
+param(
   [Parameter(Mandatory=$false)]
   [string]$Repo = "MertSezer/trendyol-automation",
 
   [Parameter(Mandatory=$false)]
-  [int]$RunId = 0,
+  [long]$RunId = 0,
 
   [Parameter(Mandatory=$false)]
   [switch]$Clean,
@@ -20,7 +20,7 @@ function Get-LatestRunId([string]$repo) {
 }
 
 if ($RunId -eq 0) {
-  $RunId = [int](Get-LatestRunId $Repo)
+  $RunId = [long](Get-LatestRunId $Repo)
 }
 
 $base = Join-Path (Get-Location) "_ci_artifacts"
