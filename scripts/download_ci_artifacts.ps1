@@ -22,7 +22,9 @@ function Get-LatestRunId([string]$repo) {
 
 
 function Get-RunStatus([string]$repo, [long]$runId) {
-  return gh run view $runId --repo $repo --json status,conclusion -q "{status: .status, conclusion: .conclusion}"
+  $json = gh run view $runId --repo $repo --json status,conclusion
+  return ($json | ConvertFrom-Json)
+}"
 }if ($RunId -eq 0) {
   $RunId = [long](Get-LatestRunId $Repo)
 }
