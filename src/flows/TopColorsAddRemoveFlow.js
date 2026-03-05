@@ -37,12 +37,12 @@ class TopColorsAddRemoveFlow {
   const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
   // Unicode-escape based TR normalization (encoding-proof)
   return x
-    .replace(/\u0131/g, "i")  // ı
-    .replace(/\u011f/g, "g")  // ğ
-    .replace(/\u00fc/g, "u")  // ü
-    .replace(/\u015f/g, "s")  // ş
-    .replace(/\u00f6/g, "o")  // ö
-    .replace(/\u00e7/g, "c"); // ç
+    .replace(/\u0131/g, "i")  // Ä±
+    .replace(/\u011f/g, "g")  // ÄŸ
+    .replace(/\u00fc/g, "u")  // Ã¼
+    .replace(/\u015f/g, "s")  // ÅŸ
+    .replace(/\u00f6/g, "o")  // Ã¶
+    .replace(/\u00e7/g, "c"); // Ã§
 };
 
       function isBadRegion(el) {
@@ -149,12 +149,12 @@ class TopColorsAddRemoveFlow {
   const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
   // Unicode-escape based TR normalization (encoding-proof)
   return x
-    .replace(/\u0131/g, "i")  // ı
-    .replace(/\u011f/g, "g")  // ğ
-    .replace(/\u00fc/g, "u")  // ü
-    .replace(/\u015f/g, "s")  // ş
-    .replace(/\u00f6/g, "o")  // ö
-    .replace(/\u00e7/g, "c"); // ç
+    .replace(/\u0131/g, "i")  // Ä±
+    .replace(/\u011f/g, "g")  // ÄŸ
+    .replace(/\u00fc/g, "u")  // Ã¼
+    .replace(/\u015f/g, "s")  // ÅŸ
+    .replace(/\u00f6/g, "o")  // Ã¶
+    .replace(/\u00e7/g, "c"); // Ã§
 };
 
       function isBadRegion(el) {
@@ -277,6 +277,22 @@ class TopColorsAddRemoveFlow {
 
     const meta = await this.product.readMeta();
 await this.product.screenshot(`${n}_product.png`);
+
+// blocked / anti-bot detection (Cloudflare etc.)
+const titleNorm = String(meta.title || "").toLowerCase();
+if (
+  titleNorm.includes("cloudflare") ||
+  titleNorm.includes("attention required") ||
+  titleNorm.includes("access denied") ||
+  titleNorm.includes("forbidden") ||
+  titleNorm.includes("captcha")
+) {
+  const totalMs = this._now() - tAll0;
+  this.I.say("SKIP: blocked by anti-bot (Cloudflare)");
+  this._crAdd("timing:url", { idx, url, openMs, addMs: 0, cartMs: 0, removeMs: 0, totalMs, status: "skip" });
+  this._crAdd("url:skip", { idx, url, reason: "blocked/anti-bot", title: meta.title });
+  return { status: "skip", opened: 1, added: 0, warn: 0, skip: 1 };
+}
 
 // 404/blocked detection (best-effort)
 const titleNorm = String(meta.title || "").toLowerCase();
