@@ -5,8 +5,8 @@ const { ResilientUi } = require("./ResilientUi");
 /**
  * UiEngine:
  * - safeClick: selectors + text fallback
- * - clickByText: DOM iÃƒÂ§inde text ile en uygun tÃ„Â±klanabilir ÃƒÂ¶Ã„Å¸eyi JS ile tÃ„Â±klar
- * - dismissOverlays: project-level dismiss (I.dismissPopups varsa ÃƒÂ§aÃ„Å¸Ã„Â±rÃ„Â±r)
+ * - clickByText: DOM iÃƒÆ’Ã‚Â§inde text ile en uygun tÃƒâ€Ã‚Â±klanabilir ÃƒÆ’Ã‚Â¶Ãƒâ€Ã…Â¸eyi JS ile tÃƒâ€Ã‚Â±klar
+ * - dismissOverlays: project-level dismiss (I.dismissPopups varsa ÃƒÆ’Ã‚Â§aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±rÃƒâ€Ã‚Â±r)
  */
 class UiEngine {
   constructor({ I }) {
