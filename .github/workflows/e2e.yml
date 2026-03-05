@@ -60,7 +60,7 @@ jobs:
 
               cat /tmp/session.json || true
 
-              # HEREDOC YOK: tek satÄ±r python -c ile sessionId al
+              # HEREDOC YOK: tek satÃ„Â±r python -c ile sessionId al
               sid=$(python3 -c "import json; d=json.load(open('/tmp/session.json','r',encoding='utf-8')); print(d.get('sessionId') or d.get('value',{}).get('sessionId') or '')" 2>/dev/null || true)
               if [ -n "$sid" ]; then
                 echo "Closing preflight session: $sid"
@@ -81,7 +81,7 @@ jobs:
             exit 1
           fi
 
-          echo "Selenium ready for sessions âœ…"
+          echo "Selenium ready for sessions Ã¢Å“â€¦"
 
       - name: Prepare products.txt
         shell: bash
@@ -94,6 +94,11 @@ jobs:
       - name: Run tests
         shell: bash
         run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
+
+      - name: Quality Gate
+        if: always()
+        shell: bash
+        run: node ./scripts/quality_gate.js
 
       - name: Render summary.md
         if: always()
