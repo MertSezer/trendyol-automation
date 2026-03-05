@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const fs = require("fs");
 const path = require("path");
@@ -29,7 +29,18 @@ const skipPct = total ? Math.round((skip / total) * 100) : 0;
 console.log("Quality Gate metrics:");
 console.log({ ok, skip, total, skipPct });
 
-if (ok < MIN_OK) {
+const outGate = path.resolve("output/quality_gate.json");
+try {
+  fs.writeFileSync(outGate, JSON.stringify({
+    ok, skip, total, skipPct,
+    minOk: MIN_OK,
+    maxSkipPct: MAX_SKIP_PCT,
+    generatedAt: new Date().toISOString()
+  }, null, 2), "utf8");
+  console.log("Wrote:", outGate);
+} catch (e) {
+  console.error("WARN: could not write output/quality_gate.json:", e && e.message ? e.message : e);
+}if (ok < MIN_OK) {
   console.error(`FAIL: ok (${ok}) < MIN_OK (${MIN_OK})`);
   process.exit(1);
 }
