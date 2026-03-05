@@ -60,7 +60,7 @@ jobs:
 
               cat /tmp/session.json || true
 
-              # HEREDOC YOK: tek satır python -c ile sessionId al
+              # HEREDOC YOK: tek satÄ±r python -c ile sessionId al
               sid=$(python3 -c "import json; d=json.load(open('/tmp/session.json','r',encoding='utf-8')); print(d.get('sessionId') or d.get('value',{}).get('sessionId') or '')" 2>/dev/null || true)
               if [ -n "$sid" ]; then
                 echo "Closing preflight session: $sid"
@@ -81,7 +81,7 @@ jobs:
             exit 1
           fi
 
-          echo "Selenium ready for sessions ✅"
+          echo "Selenium ready for sessions âœ…"
 
       - name: Prepare products.txt
         shell: bash
@@ -94,6 +94,21 @@ jobs:
       - name: Run tests
         shell: bash
         run: npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose
+
+      - name: Render summary.md
+        if: always()
+        shell: bash
+        run: node ./scripts/render_summary_md.js
+
+      - name: Publish GitHub Job Summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f output/summary.md ]; then
+            cat output/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "summary.md not found" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload artifacts (output)
         if: always()
