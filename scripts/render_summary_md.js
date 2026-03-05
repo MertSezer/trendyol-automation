@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const fs = require("fs");
 const path = require("path");
@@ -103,8 +103,8 @@ function main() {
   const now = new Date().toISOString();
   let md = `# Test Summary\n\n`;
   md += `Generated: \`${now}\`\n\n`;
-  md += `**OK:** ${okCount} • **SKIP:** ${skipCount}`;
-  if (avgTotalMs !== "") md += ` • **Avg totalMs (OK):** ${avgTotalMs}`;
+  md += `**OK:** ${okCount} | **SKIP:** ${skipCount}`;
+  if (avgTotalMs !== "") md += ` | **Avg totalMs (OK):** ${avgTotalMs}`;
   md += `\n\n`;
 
   md += `| # | Status | totalMs | openMs | addMs | cartMs | removeMs | reason | url |\n`;
