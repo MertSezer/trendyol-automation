@@ -34,11 +34,16 @@ class TopColorsAddRemoveFlow {
   async discoverColors() {
     const colors = await this.I.executeScript(function () {
       const norm = (s) => {
-        const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
-        return x
-          .replace(/Ä±/g, "i").replace(/ÄŸ/g, "g").replace(/Ã¼/g, "u")
-          .replace(/ÅŸ/g, "s").replace(/Ã¶/g, "o").replace(/Ã§/g, "c");
-      };
+  const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+  // Unicode-escape based TR normalization (encoding-proof)
+  return x
+    .replace(/\u0131/g, "i")  // ı
+    .replace(/\u011f/g, "g")  // ğ
+    .replace(/\u00fc/g, "u")  // ü
+    .replace(/\u015f/g, "s")  // ş
+    .replace(/\u00f6/g, "o")  // ö
+    .replace(/\u00e7/g, "c"); // ç
+};
 
       function isBadRegion(el) {
         if (!el || !el.closest) return false;
@@ -141,11 +146,16 @@ class TopColorsAddRemoveFlow {
   async selectColorByIndex(index) {
     const clicked = await this.I.executeScript(function (indexInner) {
       const norm = (s) => {
-        const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
-        return x
-          .replace(/Ä±/g, "i").replace(/ÄŸ/g, "g").replace(/Ã¼/g, "u")
-          .replace(/ÅŸ/g, "s").replace(/Ã¶/g, "o").replace(/Ã§/g, "c");
-      };
+  const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
+  // Unicode-escape based TR normalization (encoding-proof)
+  return x
+    .replace(/\u0131/g, "i")  // ı
+    .replace(/\u011f/g, "g")  // ğ
+    .replace(/\u00fc/g, "u")  // ü
+    .replace(/\u015f/g, "s")  // ş
+    .replace(/\u00f6/g, "o")  // ö
+    .replace(/\u00e7/g, "c"); // ç
+};
 
       function isBadRegion(el) {
         if (!el || !el.closest) return false;
@@ -266,9 +276,17 @@ class TopColorsAddRemoveFlow {
     const openMs = this._now() - tOpen0;
 
     const meta = await this.product.readMeta();
-    await this.product.screenshot(`${n}_product.png`);
+await this.product.screenshot(`${n}_product.png`);
 
-    const colors = await this.discoverColors();
+// 404/blocked detection (best-effort)
+const titleNorm = String(meta.title || "").toLowerCase();
+if (titleNorm.includes("error 404") || titleNorm.includes("404") || titleNorm.includes("not found")) {
+  const totalMs = this._now() - tAll0;
+  this.I.say("SKIP: product page looks like 404/not-found");
+  this._crAdd("timing:url", { idx, url, openMs, addMs: 0, cartMs: 0, removeMs: 0, totalMs, status: "skip" });
+  this._crAdd("url:skip", { idx, url, reason: "page 404/not-found", title: meta.title });
+  return { status: "skip", opened: 1, added: 0, warn: 0, skip: 1 };
+}const colors = await this.discoverColors();
     this.I.say("COLORS_FOUND=" + String(colors.length));
     this.I.say("COLORS_SAMPLE=" + colors.slice(0, 5).map(x => x.label).join(" | "));
     this._crAdd("colors:discovered", { idx, url, count: colors.length, colors });
