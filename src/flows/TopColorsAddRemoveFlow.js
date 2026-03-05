@@ -37,12 +37,12 @@ class TopColorsAddRemoveFlow {
   const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
   // Unicode-escape based TR normalization (encoding-proof)
   return x
-    .replace(/\u0131/g, "i")  // Ä±
-    .replace(/\u011f/g, "g")  // ÄŸ
-    .replace(/\u00fc/g, "u")  // Ã¼
-    .replace(/\u015f/g, "s")  // ÅŸ
-    .replace(/\u00f6/g, "o")  // Ã¶
-    .replace(/\u00e7/g, "c"); // Ã§
+    .replace(/\u0131/g, "i")  // Ã„Â±
+    .replace(/\u011f/g, "g")  // Ã„Å¸
+    .replace(/\u00fc/g, "u")  // ÃƒÂ¼
+    .replace(/\u015f/g, "s")  // Ã…Å¸
+    .replace(/\u00f6/g, "o")  // ÃƒÂ¶
+    .replace(/\u00e7/g, "c"); // ÃƒÂ§
 };
 
       function isBadRegion(el) {
@@ -149,12 +149,12 @@ class TopColorsAddRemoveFlow {
   const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
   // Unicode-escape based TR normalization (encoding-proof)
   return x
-    .replace(/\u0131/g, "i")  // Ä±
-    .replace(/\u011f/g, "g")  // ÄŸ
-    .replace(/\u00fc/g, "u")  // Ã¼
-    .replace(/\u015f/g, "s")  // ÅŸ
-    .replace(/\u00f6/g, "o")  // Ã¶
-    .replace(/\u00e7/g, "c"); // Ã§
+    .replace(/\u0131/g, "i")  // Ã„Â±
+    .replace(/\u011f/g, "g")  // Ã„Å¸
+    .replace(/\u00fc/g, "u")  // ÃƒÂ¼
+    .replace(/\u015f/g, "s")  // Ã…Å¸
+    .replace(/\u00f6/g, "o")  // ÃƒÂ¶
+    .replace(/\u00e7/g, "c"); // ÃƒÂ§
 };
 
       function isBadRegion(el) {
@@ -295,7 +295,6 @@ if (
 }
 
 // 404/blocked detection (best-effort)
-const titleNorm = String(meta.title || "").toLowerCase();
 if (titleNorm.includes("error 404") || titleNorm.includes("404") || titleNorm.includes("not found")) {
   const totalMs = this._now() - tAll0;
   this.I.say("SKIP: product page looks like 404/not-found");
