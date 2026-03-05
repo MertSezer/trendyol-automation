@@ -36,8 +36,8 @@ class TopColorsAddRemoveFlow {
       const norm = (s) => {
         const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
         return x
-          .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
-          .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
+          .replace(/Ä±/g, "i").replace(/ÄŸ/g, "g").replace(/Ã¼/g, "u")
+          .replace(/ÅŸ/g, "s").replace(/Ã¶/g, "o").replace(/Ã§/g, "c");
       };
 
       function isBadRegion(el) {
@@ -85,8 +85,23 @@ class TopColorsAddRemoveFlow {
         const r = el.getBoundingClientRect();
         if (r.width < 8 || r.height < 8) return false;
         if (isBadRegion(el)) return false;
-        return true;
-      });
+              // Strict candidate rules to avoid picking informational texts:
+      // - buttons always ok
+      // - inputs always ok
+      // - labels ok only if they contain an input
+      // - li/div/span ok only if role=button OR contains input OR has aria-selected/pressed
+      const tag = (el.tagName || "").toLowerCase();
+      const hasInput = !!(el.querySelector && el.querySelector("input"));
+      const roleBtn = (el.getAttribute && el.getAttribute("role")) === "button";
+      const ariaSel = (el.getAttribute && (el.getAttribute("aria-selected") || el.getAttribute("aria-pressed"))) != null;
+
+      if (tag === "button") return true;
+      if (tag === "input") return true;
+      if (tag === "label") return hasInput;
+      if (roleBtn || hasInput || ariaSel) return true;
+
+      return false;
+    });
 
       const raw = nodes.map(el => {
         const aria = el.getAttribute && el.getAttribute("aria-label");
@@ -128,8 +143,8 @@ class TopColorsAddRemoveFlow {
       const norm = (s) => {
         const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
         return x
-          .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
-          .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
+          .replace(/Ä±/g, "i").replace(/ÄŸ/g, "g").replace(/Ã¼/g, "u")
+          .replace(/ÅŸ/g, "s").replace(/Ã¶/g, "o").replace(/Ã§/g, "c");
       };
 
       function isBadRegion(el) {
@@ -175,8 +190,23 @@ class TopColorsAddRemoveFlow {
         const r = el.getBoundingClientRect();
         if (r.width < 8 || r.height < 8) return false;
         if (isBadRegion(el)) return false;
-        return true;
-      });
+              // Strict candidate rules to avoid picking informational texts:
+      // - buttons always ok
+      // - inputs always ok
+      // - labels ok only if they contain an input
+      // - li/div/span ok only if role=button OR contains input OR has aria-selected/pressed
+      const tag = (el.tagName || "").toLowerCase();
+      const hasInput = !!(el.querySelector && el.querySelector("input"));
+      const roleBtn = (el.getAttribute && el.getAttribute("role")) === "button";
+      const ariaSel = (el.getAttribute && (el.getAttribute("aria-selected") || el.getAttribute("aria-pressed"))) != null;
+
+      if (tag === "button") return true;
+      if (tag === "input") return true;
+      if (tag === "label") return hasInput;
+      if (roleBtn || hasInput || ariaSel) return true;
+
+      return false;
+    });
 
       const raw = nodes.map(el => {
         const aria = el.getAttribute && el.getAttribute("aria-label");
