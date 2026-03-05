@@ -3,67 +3,75 @@
 const { ResilientUi } = require("./ResilientUi");
 
 /**
- * UiEngine: project-level UI helper.
- * Delegates flaky click behavior to ResilientUi.
+ * UiEngine: project-level UI helper wrapper.
+ * Keeps backward compatibility for pages:
+ * - dismissOverlays()
+ * - clickByText(texts, {postWaitSec, step, retries})
+ * - safeClick({label, byText, postWaitSec, retries}) OR safeClick(texts, opts)
  */
 class UiEngine {
   /**
-   * @param {any} I CodeceptJS actor
+   * @param {{ I: any, caseReport?: any }} deps
    */
-  constructor(I) {
+  constructor({ I, caseReport } = {}) {
     this.I = I;
+    this.caseReport = caseReport || null;
     this.resilient = new ResilientUi(I);
   }
 
-  /**
-   * Best-effort overlay dismiss.
-   * Never throws.
-   */
   async dismissOverlays() {
-    try {
-      // if project has an I.dismissPopups helper, use it
-      if (this.I && typeof this.I.dismissPopups === "function") {
-        await this.I.dismissPopups();
-      }
-    } catch (_) {}
-    // plus resilient dismiss
     await this.resilient.dismissOverlays();
   }
 
   /**
-   * Click by any of the given texts. Returns clicked text or null.
+   * Click by one or many texts.
    * @param {string[]|string} texts
    * @param {{ postWaitSec?: number, step?: string, retries?: number }} [opts]
+   * @returns {Promise<string|null>} clicked text (normalized) or null
    */
   async clickByText(texts, { postWaitSec = 0.8, step = "ui:click", retries } = {}) {
     const pauseMs = Math.round(Number(postWaitSec || 0) * 1000);
-    const arr = Array.isArray(texts) ? texts : [texts];
-    return await this.resilient.clickByTexts(arr, { step, pauseMs, retries });
+    return await this.resilient.clickByTexts(texts, { step, retries, pauseMs });
   }
 
   /**
-   * Try clicking one of multiple candidate labels/text arrays.
-   * Returns { ok, via, label } for reporting convenience.
-   * @param {string} label logical label
-   * @param {string[]|string} byText array(s) of texts
+   * Used by older code: tryClickOneOf(label, byText)
+   * Returns { ok, via, label }
    */
   async tryClickOneOf(label, byText) {
-    const via = await this.clickByText(byText, { postWaitSec: 0.8, step: label });
-    if (via) return { ok: true, via, label };
-    return { ok: false, via: null, label };
-  }
-  /**
-   * Backward-compatible alias used by older pages/flows.
-   * @param {string[]|string} texts
-   * @param {{ postWaitSec?: number, step?: string, retries?: number }} [opts]
-   */
-  async safeClick(texts, { postWaitSec = 0.8, step = "ui:click", retries } = {}) {
-    return await this.clickByText(texts, { postWaitSec, step, retries });
+    const clicked = await this.clickByText(byText, { postWaitSec: 0.8, step: label || "ui:click" });
+    if (clicked) return { ok: true, via: "text:" + clicked, label: label || "ui:click" };
+    return { ok: false, via: null, label: label || "ui:click" };
   }
 
   /**
-   * Backward-compatible alias.
+   * Backward-compatible safeClick.
+   * Supports:
+   * - safeClick({ label, byText, postWaitSec, retries })
+   * - safeClick(texts, { postWaitSec, step, retries })
    */
+  async safeClick(arg1, arg2 = {}) {
+    // object signature: { label, byText, postWaitSec, retries }
+    if (arg1 && typeof arg1 === "object" && !Array.isArray(arg1)) {
+      const label = arg1.label || "ui:click";
+      const byText = arg1.byText || arg1.texts || [];
+      const postWaitSec = Number.isFinite(arg1.postWaitSec) ? arg1.postWaitSec : 0.8;
+      const retries = arg1.retries;
+      const clicked = await this.clickByText(byText, { postWaitSec, step: label, retries });
+      if (clicked) return { ok: true, via: "text:" + clicked, label };
+      return { ok: false, via: null, label };
+    }
+
+    // plain signature
+    const texts = arg1;
+    const step = arg2.step || "ui:click";
+    const postWaitSec = Number.isFinite(arg2.postWaitSec) ? arg2.postWaitSec : 0.8;
+    const retries = arg2.retries;
+    const clicked = await this.clickByText(texts, { postWaitSec, step, retries });
+    if (clicked) return { ok: true, via: "text:" + clicked, label: step };
+    return { ok: false, via: null, label: step };
+  }
+
   async safeClickOneOf(label, byText) {
     return await this.tryClickOneOf(label, byText);
   }
