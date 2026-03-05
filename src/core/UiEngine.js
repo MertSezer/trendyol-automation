@@ -52,6 +52,21 @@ class UiEngine {
     if (via) return { ok: true, via, label };
     return { ok: false, via: null, label };
   }
+  /**
+   * Backward-compatible alias used by older pages/flows.
+   * @param {string[]|string} texts
+   * @param {{ postWaitSec?: number, step?: string, retries?: number }} [opts]
+   */
+  async safeClick(texts, { postWaitSec = 0.8, step = "ui:click", retries } = {}) {
+    return await this.clickByText(texts, { postWaitSec, step, retries });
+  }
+
+  /**
+   * Backward-compatible alias.
+   */
+  async safeClickOneOf(label, byText) {
+    return await this.tryClickOneOf(label, byText);
+  }
 }
 
 module.exports = { UiEngine };
