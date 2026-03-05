@@ -1,15 +1,19 @@
 "use strict";
 
+
+const { ResilientUi } = require("./ResilientUi");
 /**
  * UiEngine:
  * - safeClick: selectors + text fallback
- * - clickByText: DOM içinde text ile en uygun tıklanabilir öğeyi JS ile tıklar
- * - dismissOverlays: project-level dismiss (I.dismissPopups varsa çağırır)
+ * - clickByText: DOM iÃ§inde text ile en uygun tÄ±klanabilir Ã¶ÄŸeyi JS ile tÄ±klar
+ * - dismissOverlays: project-level dismiss (I.dismissPopups varsa Ã§aÄŸÄ±rÄ±r)
  */
 class UiEngine {
   constructor({ I }) {
     this.I = I;
-  }
+  
+    this.resilient = new ResilientUi(I);
+}
 
   async waitSec(sec) {
     await this.I.wait(sec);
