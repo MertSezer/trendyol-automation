@@ -17,6 +17,11 @@ jobs:
       SELENIUM_PATH: "/"
       BASE_URL: https://www.trendyol.com
       CI: "true"
+      DEMO_MODE: "1"
+      DATASET: datasets/demo.txt
+      TOP_COLORS: "3"
+      QUALITY_GATE_MIN_OK: "1"
+      QUALITY_GATE_MAX_SKIP_PCT: "80"
 
     steps:
       - name: Checkout
@@ -36,60 +41,25 @@ jobs:
         run: |
           docker rm -f selenium 2>/dev/null || true
           docker run -d --name selenium -p 4444:4444 --shm-size=2g --ipc=host \
-            -e SE_NODE_MAX_SESSIONS=2 \
-            -e SE_NODE_OVERRIDE_MAX_SESSIONS=true \
             -e SE_NODE_SESSION_TIMEOUT=300 \
             -e SE_SESSION_REQUEST_TIMEOUT=300 \
             -e SE_SESSION_RETRY_INTERVAL=2 \
             selenium/standalone-chrome:latest
           docker ps -a | sed -n '1,30p'
 
-      - name: Wait Selenium (status + session preflight + close)
+      - name: Wait Selenium (status)
         shell: bash
         run: |
           echo "Waiting Selenium status endpoint..."
           timeout 240 bash -lc 'until curl -fsS http://localhost:4444/status >/dev/null 2>&1 || curl -fsS http://localhost:4444/wd/hub/status >/dev/null 2>&1; do sleep 2; done'
+          echo "Selenium status endpoint OK ✅"
 
-          echo "Preflight: create session (3 attempts) then close it"
-          ok=0
-          for i in 1 2 3; do
-            echo "Attempt $i..."
-            if curl -fsS -X POST http://localhost:4444/session -H "Content-Type: application/json" \
-              --data "{\"capabilities\":{\"alwaysMatch\":{\"browserName\":\"chrome\",\"goog:chromeOptions\":{\"args\":[\"--headless=new\",\"--no-sandbox\",\"--disable-dev-shm-usage\",\"--disable-gpu\",\"--remote-debugging-pipe\"]}}}}" \
-              >/tmp/session.json; then
-
-              cat /tmp/session.json || true
-
-              # HEREDOC YOK: tek satÃƒâ€Ã‚Â±r python -c ile sessionId al
-              sid=$(python3 -c "import json; d=json.load(open('/tmp/session.json','r',encoding='utf-8')); print(d.get('sessionId') or d.get('value',{}).get('sessionId') or '')" 2>/dev/null || true)
-              if [ -n "$sid" ]; then
-                echo "Closing preflight session: $sid"
-                curl -fsS -X DELETE "http://localhost:4444/session/$sid" >/dev/null || true
-              else
-                echo "WARN: could not parse session id"
-              fi
-
-              ok=1
-              break
-            fi
-            sleep 3
-          done
-
-          if [ "$ok" != "1" ]; then
-            echo "Could not create session via /session"
-            docker logs selenium --tail 200 || true
-            exit 1
-          fi
-
-          echo "Selenium ready for sessions ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦"
-
-      - name: Prepare products.txt
+      - name: Prepare dataset
         shell: bash
         run: |
-          if [ ! -f "products.txt" ] && [ -f "products.example.txt" ]; then
-            cp products.example.txt products.txt
-          fi
-          ls -la products*.txt || true
+          echo "DATASET=$DATASET"
+          ls -la datasets || true
+          test -f "$DATASET" || (echo "Dataset file not found: $DATASET" && exit 1)
 
       - name: Run tests
         shell: bash
