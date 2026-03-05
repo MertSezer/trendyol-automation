@@ -5,8 +5,8 @@ const { ResilientUi } = require("./ResilientUi");
 /**
  * UiEngine:
  * - safeClick: selectors + text fallback
- * - clickByText: DOM iÃƒÆ’Ã‚Â§inde text ile en uygun tÃƒâ€Ã‚Â±klanabilir ÃƒÆ’Ã‚Â¶Ãƒâ€Ã…Â¸eyi JS ile tÃƒâ€Ã‚Â±klar
- * - dismissOverlays: project-level dismiss (I.dismissPopups varsa ÃƒÆ’Ã‚Â§aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±rÃƒâ€Ã‚Â±r)
+ * - clickByText: DOM iÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§inde text ile en uygun tÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±klanabilir ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸eyi JS ile tÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±klar
+ * - dismissOverlays: project-level dismiss (I.dismissPopups varsa ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§aÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±rÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±r)
  */
 class UiEngine {
   constructor({ I }) {
@@ -43,28 +43,11 @@ class UiEngine {
   }
 
   async clickByText(texts, { postWaitSec = 0.8 } = {}) {
-    try {
-      const clicked = await this.I.executeScript(function (textsInner) {
-        const norm = (s) => (s || "").toLowerCase().replace(/\s+/g, " ").trim();
-        const targets = (textsInner || []).map(norm);
-
-        const nodes = Array.from(
-          document.querySelectorAll('button, a, div[role="button"], span[role="button"]')
-        );
-
-        for (const el of nodes) {
-          const txt = norm(el.innerText || el.textContent);
-          if (!txt) continue;
-          if (!targets.some((t) => t && txt.includes(t))) continue;
-
-          // skip disabled
-          if (el.disabled) continue;
-          const ariaDisabled = (el.getAttribute && el.getAttribute("aria-disabled")) || "";
-          if (String(ariaDisabled).toLowerCase() === "true") continue;
-
-          try { el.scrollIntoView({ block: "center", inline: "center" }); } catch (_) {}
-          try { el.click(); return txt; } catch (_) {}
-        }
+  // Delegate to resilient layer (retries + overlay dismiss + scroll)
+  // Keep postWaitSec compatibility by mapping to pauseMs
+  const pauseMs = Math.round(Number(postWaitSec || 0) * 1000);
+  return await this.resilient.clickByTexts(texts, { step: "ui:click", pauseMs });
+}
         return null;
       }, texts);
 
