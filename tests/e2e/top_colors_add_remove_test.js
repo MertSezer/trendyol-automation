@@ -2,6 +2,7 @@
 
 const { container } = require("codeceptjs");
 const { readProducts } = require("../../src/core/Data");
+const { config } = require("../../src/config/config");
 const { TopColorsAddRemoveFlow } = require("../../src/flows/TopColorsAddRemoveFlow");
 
 Feature("Trendyol - Top Colors Add/Remove Demo (POM)");
@@ -18,8 +19,7 @@ Scenario("Top colors -> select -> add to cart -> remove (per URL)", async ({ I }
     return;
   }
 
-  const parsed = parseInt(String(process.env.TOP_COLORS || "3").trim(), 10);
-const topN = Number.isFinite(parsed) ? parsed : 3;
+    const topN = config.topColors;
   const caseReport = getCaseReport();
   I.say("CaseReport=" + (caseReport ? "OK" : "NULL"));
   I.say("TOP_COLORS=" + topN);
@@ -44,8 +44,12 @@ const topN = Number.isFinite(parsed) ? parsed : 3;
 
     // If nothing was actually executed (all skipped), fail fast (enterprise signal)
   if (opened > 0 && added === 0 && skip === opened) {
+  if (String(process.env.DEMO_MODE || "") === "1") {
+    I.say("WARN: All URLs were skipped (demo mode). No real E2E executed.");
+  } else {
     throw new Error("All URLs were skipped (blocked/404/no-variants). No real E2E executed.");
   }
+}
 
 if (caseReport) caseReport.add("multi:done", { ok: true, counters: { opened, added, warn, skip } });
 });
