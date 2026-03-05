@@ -12,7 +12,8 @@
                     "e2e:multi":  "chcp 65001 \u003enul \u0026\u0026 cross-env DEMO_MODE=1 TESTS=tests/e2e/multi_url_add_remove_test.js DATASET=datasets/demo.txt npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose",
                     "e2e:colors":  "chcp 65001 \u003enul \u0026\u0026 cross-env DEMO_MODE=1 TOP_COLORS=3 TESTS=tests/e2e/top_colors_add_remove_test.js DATASET=datasets/demo.txt npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose",
                     "report":  "node ./scripts/render_summary_md.js",
-                    "ci:download":  "powershell -ExecutionPolicy Bypass -File ./scripts/download_ci_artifacts.ps1 -Timestamp"
+                    "ci:download":  "powershell -ExecutionPolicy Bypass -File ./scripts/download_ci_artifacts.ps1 -Timestamp",
+                    "gate":  "node ./scripts/quality_gate.js"
                 },
     "keywords":  [
 
