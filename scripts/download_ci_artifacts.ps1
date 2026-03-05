@@ -19,11 +19,22 @@ function Get-LatestRunId([string]$repo) {
   return gh run list --repo $repo --limit 1 --json databaseId -q ".[0].databaseId"
 }
 
-if ($RunId -eq 0) {
+
+
+function Get-RunStatus([string]$repo, [long]$runId) {
+  return gh run view $runId --repo $repo --json status,conclusion -q "{status: .status, conclusion: .conclusion}"
+}if ($RunId -eq 0) {
   $RunId = [long](Get-LatestRunId $Repo)
 }
 
-$base = Join-Path (Get-Location) "_ci_artifacts"
+
+
+$st = Get-RunStatus $Repo $RunId
+Write-Host ("Run status: {0} / {1}" -f $st.status, $st.conclusion)
+if ($st.status -ne "completed") {
+  Write-Host "Run is not completed yet; skipping download."
+  exit 2
+}$base = Join-Path (Get-Location) "_ci_artifacts"
 
 if ($Timestamp) {
   $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
