@@ -33,7 +33,17 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
     added  += res.added  || 0;
     skip   += res.skip   || 0;
     warn   += res.warn   || 0;
+  
+
+    if (String(process.env.DEMO_MODE || "") === "1" && (res.status === "ok" || (res.added || 0) > 0)) {
+      I.say("DEMO_MODE=1 -> first success, stopping early");
+      break;
+    }}
+
+    // If nothing was actually executed (all skipped), fail fast (enterprise signal)
+  if (opened > 0 && added === 0 && skip === opened) {
+    throw new Error("All URLs were skipped (blocked/404/no-variants). No real E2E executed.");
   }
 
-  if (caseReport) caseReport.add("multi:done", { ok: true, counters: { opened, added, skip, warn } });
+if (caseReport) caseReport.add("multi:done", { ok: true, counters: { opened, added, skip, warn } });
 });

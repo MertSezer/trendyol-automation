@@ -34,7 +34,17 @@ const topN = Number.isFinite(parsed) ? parsed : 3;
     added += r.added || 0;
     warn += r.warn || 0;
     skip += r.skip || 0;
+  
+
+    if (String(process.env.DEMO_MODE || "") === "1" && (r.status === "ok" || (r.added || 0) > 0)) {
+      I.say("DEMO_MODE=1 -> first success, stopping early");
+      break;
+    }}
+
+    // If nothing was actually executed (all skipped), fail fast (enterprise signal)
+  if (opened > 0 && added === 0 && skip === opened) {
+    throw new Error("All URLs were skipped (blocked/404/no-variants). No real E2E executed.");
   }
 
-  if (caseReport) caseReport.add("multi:done", { ok: true, counters: { opened, added, warn, skip } });
+if (caseReport) caseReport.add("multi:done", { ok: true, counters: { opened, added, warn, skip } });
 });
