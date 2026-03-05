@@ -37,12 +37,12 @@ class TopColorsAddRemoveFlow {
   const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
   // Unicode-escape based TR normalization (encoding-proof)
   return x
-    .replace(/\u0131/g, "i")  // Ãƒâ€Ã‚Â±
-    .replace(/\u011f/g, "g")  // Ãƒâ€Ã…Â¸
-    .replace(/\u00fc/g, "u")  // ÃƒÆ’Ã‚Â¼
-    .replace(/\u015f/g, "s")  // Ãƒâ€¦Ã…Â¸
-    .replace(/\u00f6/g, "o")  // ÃƒÆ’Ã‚Â¶
-    .replace(/\u00e7/g, "c"); // ÃƒÆ’Ã‚Â§
+    .replace(/\u0131/g, "i")  // ÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±
+    .replace(/\u011f/g, "g")  // ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸
+    .replace(/\u00fc/g, "u")  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼
+    .replace(/\u015f/g, "s")  // ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€¦Ã‚Â¸
+    .replace(/\u00f6/g, "o")  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶
+    .replace(/\u00e7/g, "c"); // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§
 };
 
       function isBadRegion(el) {
@@ -149,12 +149,12 @@ class TopColorsAddRemoveFlow {
   const x = (s || "").toLowerCase().replace(/\s+/g, " ").trim();
   // Unicode-escape based TR normalization (encoding-proof)
   return x
-    .replace(/\u0131/g, "i")  // Ãƒâ€Ã‚Â±
-    .replace(/\u011f/g, "g")  // Ãƒâ€Ã…Â¸
-    .replace(/\u00fc/g, "u")  // ÃƒÆ’Ã‚Â¼
-    .replace(/\u015f/g, "s")  // Ãƒâ€¦Ã…Â¸
-    .replace(/\u00f6/g, "o")  // ÃƒÆ’Ã‚Â¶
-    .replace(/\u00e7/g, "c"); // ÃƒÆ’Ã‚Â§
+    .replace(/\u0131/g, "i")  // ÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±
+    .replace(/\u011f/g, "g")  // ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸
+    .replace(/\u00fc/g, "u")  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼
+    .replace(/\u015f/g, "s")  // ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€¦Ã‚Â¸
+    .replace(/\u00f6/g, "o")  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶
+    .replace(/\u00e7/g, "c"); // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§
 };
 
       function isBadRegion(el) {
@@ -371,12 +371,7 @@ if (titleNorm.includes("error 404") || titleNorm.includes("404") || titleNorm.in
 
     const totalMs = this._now() - tAll0;
     this._crAdd("url:ok", { idx, url, current: meta.current, title: meta.title, colorsTried: top.length, counters: { added, warn, skip }, totalMs });
-
-    
-    if (process.env.DEMO_MODE === "1") {
-      this.I.say("DEMO_MODE=1 -> first success, stopping early");
-      break;
-    }return { status: "ok", opened: 1, added, warn, skip };
+return { status: "ok", opened: 1, added, warn, skip };
   }
 }
 
