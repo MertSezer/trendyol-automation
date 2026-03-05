@@ -2,6 +2,7 @@
 
 const { container } = require("codeceptjs");
 const { readProducts } = require("../../src/core/Data");
+const { config } = require("../../src/config/config");
 const { AddRemoveFlow } = require("../../src/flows/AddRemoveFlow");
 
 Feature("Trendyol - Multi URL Enterprise Demo (POM)");
