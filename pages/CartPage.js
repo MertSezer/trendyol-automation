@@ -1,9 +1,9 @@
 ﻿module.exports = {
   async verifyAndScreenshot() {
-    // Backward compatible alias
-    return await this.screenshotCart('02_cart_page.png');
+    return await this.screenshotCart("02_cart_page.png");
   },
-async goToCart() {
+
+  async goToCart() {
     const { I } = inject();
     I.amOnPage("/sepetim");
     I.wait(2);
@@ -96,6 +96,31 @@ async goToCart() {
     throw new Error("CHECKOUT_NOT_REACHED");
   },
 
+  async clearCartBestEffort() {
+    const { I } = inject();
+    const deadline = Date.now() + 15000;
+
+    while (Date.now() < deadline) {
+      try {
+        await this.verifyEmpty();
+        return true;
+      } catch {}
+
+      try {
+        await this.removeFromCart();
+      } catch {}
+
+      I.wait(1);
+
+      try {
+        await this.verifyEmpty();
+        return true;
+      } catch {}
+    }
+
+    return false;
+  },
+
   async removeFromCart() {
     const { I } = inject();
     const needles = ["Sil", "Kaldır", "Ürünü Sil", "Sepetten Kaldır", "Remove", "Delete"];
@@ -124,7 +149,10 @@ async goToCart() {
         } catch { return false; }
       }, needle).catch(() => false);
 
-      if (clicked) { I.wait(1); return; }
+      if (clicked) {
+        I.wait(1);
+        return;
+      }
     }
 
     I.saveScreenshot("remove_from_cart_not_found.png");
@@ -170,4 +198,3 @@ async goToCart() {
     throw new Error("EMPTY_CART_NOT_CONFIRMED");
   }
 };
-
