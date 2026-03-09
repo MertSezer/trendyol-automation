@@ -31,7 +31,8 @@
                     "mobivisor:status":  "powershell -ExecutionPolicy Bypass -File ./scripts/show_mobivisor_status.ps1",
                     "dataset:coverage":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_trendyol_coverage_dataset.ps1",
                     "coverage:summary":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_trendyol_coverage_summary.ps1",
-                    "golden:build":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_golden_candidates.ps1"
+                    "golden:build":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_golden_candidates.ps1",
+                    "testcases:generate":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_generated_test_cases.ps1"
                 },
     "keywords":  [
 
