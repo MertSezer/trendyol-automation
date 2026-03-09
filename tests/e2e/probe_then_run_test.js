@@ -1,257 +1,342 @@
 ﻿const fs = require("fs");
 const path = require("path");
-const { I } = inject();
+
+const {
+  acceptCookieLikePopups,
+  clickByHints,
+  verifyAddToCart,
+  verifyRemoveFromCart,
+  safeScreenshot,
+  isBadPage,
+  shortenText,
+  classifyPage,
+  sanitizeText
+} = require("../helpers/trendyol_shared");
+
+const outputDir = path.join(process.cwd(), "output");
+const dataset = process.env.DATASET || "datasets/candidate_intermittent.txt";
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function readDataset(filePath) {
+  const raw = fs.readFileSync(path.resolve(filePath), "utf8");
+  return raw
+    .split(/\r?\n/)
+    .map((x) => x.trim())
+    .filter((x) => x && !x.startsWith("#"));
+}
+
+function writeJson(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+}
 
 Feature("Trendyol - Probe Then Run");
 
-Scenario("Find first real PDP in same session and run basic cart flow", async () => {
-  const dataset = process.env.DATASET || "datasets/all_candidates.txt";
-  const outputDir = path.join(process.cwd(), "output");
-  const reportFile = path.join(outputDir, "probe_then_run_report.json");
-
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+Scenario("Find first real PDP in same session and run basic cart flow", async ({ I }) => {
+  const startedAt = nowIso();
+  const urls = readDataset(dataset);
+  const reportPath = path.join(outputDir, "probe_then_run_report.json");
 
   const events = [];
-  const startedAt = new Date().toISOString();
+  const diagnostics = [];
 
-  function add(event, data = {}) {
-    events.push({
-      ts: new Date().toISOString(),
-      event,
-      ...data,
-    });
-  }
+  let selectedInfo = null;
+  let selectedDiagnostic = null;
 
-  function isBadPage(current, title) {
-    const c = String(current || "");
-    const t = String(title || "");
+  let addOk = false;
+  let cartOpenOk = false;
+  let removeOk = false;
 
-    const listingLike =
-      !c.includes("-p-") ||
-      c.includes("/sr?") ||
-      c.includes("/sirali-urunler") ||
-      c.includes("/cok-satanlar") ||
-      c.includes("butik/liste");
-
-    const genericTitle =
-      t.includes("Online Alışveriş Sitesi") ||
-      t.includes("Türkiye’nin Trend Yolu") ||
-      t.includes("Arama Sonuçları");
-
-    return listingLike || genericTitle;
-  }
-
-  if (!fs.existsSync(dataset)) {
-    throw new Error(`Dataset not found: ${dataset}`);
-  }
-
-  const urls = fs
-    .readFileSync(dataset, "utf8")
-    .split(/\r?\n/)
-    .map(s => s.trim())
-    .filter(Boolean);
+  events.push({
+    ts: nowIso(),
+    event: "run:start",
+    dataset,
+    count: urls.length
+  });
 
   I.say(`DATASET=${dataset}`);
   I.say(`URL count=${urls.length}`);
-  add("run:start", { dataset, count: urls.length });
 
-  let selected = null;
+  for (let idx = 0; idx < urls.length; idx += 1) {
+    const url = urls[idx];
+    const ordinal = idx + 1;
 
-  for (let i = 0; i < urls.length; i++) {
-    const url = urls[i];
-    const idx = i + 1;
+    events.push({
+      ts: nowIso(),
+      event: "url:probe",
+      idx: ordinal,
+      total: urls.length,
+      url
+    });
 
-    I.say(`PROBE [${idx}/${urls.length}] ${url}`);
-    add("url:probe", { idx, total: urls.length, url });
-
-    await I.amOnPage(url);
+    I.say(`PROBE [${ordinal}/${urls.length}] ${url}`);
+    I.amOnPage(url);
     I.wait(2);
 
-    await I.executeScript(() => {
-      const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-      const hints = ["kabul", "accept", "agree", "tamam", "ok", "kapat"];
-      for (const el of nodes) {
-        const txt = (el.innerText || "").toLowerCase();
-        if (!txt) continue;
-        if (hints.some(h => txt.includes(h))) {
-          try { el.click(); } catch {}
-        }
-      }
-    }).catch(() => {});
+    await acceptCookieLikePopups(I);
 
-    const current = await I.grabCurrentUrl().catch(() => "");
-    const title = await I.grabTitle().catch(() => "");
+    const currentUrl = sanitizeText(await I.grabCurrentUrl());
+    const title = sanitizeText(await I.grabTitle());
 
-    I.say(`CURRENT=${current}`);
+    I.say(`CURRENT=${currentUrl}`);
     I.say(`TITLE=${title}`);
 
-    if (isBadPage(current, title)) {
-      I.say(`SKIP: not product page -> ${current}`);
-      add("url:skip", {
-        idx,
+    const classification = classifyPage(currentUrl, title);
+    const badByLegacyRule = isBadPage(currentUrl, title);
+
+    const diag = {
+      idx: ordinal,
+      total: urls.length,
+      probeUrl: sanitizeText(url),
+      finalUrl: sanitizeText(currentUrl),
+      title,
+      pageKind: classification.pageKind,
+      isBadPage: classification.isBadPage || badByLegacyRule,
+      skipReason:
+        classification.isBadPage || badByLegacyRule
+          ? (classification.reasons.join("|") || "classified_as_non_product")
+          : null,
+      selected: false,
+      addToCartAttempted: false,
+      addVerified: false,
+      cartOpenAttempted: false,
+      cartReached: false,
+      removeAttempted: false,
+      removeVerified: false
+    };
+
+    if (diag.isBadPage) {
+      diagnostics.push(diag);
+
+      events.push({
+        ts: nowIso(),
+        event: "url:skip",
+        idx: ordinal,
         total: urls.length,
         url,
-        current,
-        title,
-        reason: "not_product_page",
+        current: sanitizeText(currentUrl),
+        title: shortenText(sanitizeText(title), 160),
+        pageKind: diag.pageKind,
+        skipReason: diag.skipReason
       });
+
       continue;
     }
 
-    selected = { idx, total: urls.length, url, current, title };
-    add("url:selected", selected);
-    I.say(`SELECTED=${current}`);
+    diag.selected = true;
+    diagnostics.push(diag);
+    selectedDiagnostic = diag;
+
+    selectedInfo = {
+      idx: ordinal,
+      total: urls.length,
+      url,
+      current: sanitizeText(currentUrl),
+      title
+    };
+
+    events.push({
+      ts: nowIso(),
+      event: "url:selected",
+      idx: ordinal,
+      total: urls.length,
+      url,
+      current: sanitizeText(currentUrl),
+      title: shortenText(sanitizeText(title), 160),
+      pageKind: diag.pageKind
+    });
+
+    I.say(`SELECTED=${currentUrl}`);
+    await safeScreenshot(I, "probe_then_run_pdp.png");
     break;
   }
 
-  if (!selected) {
-    const finishedAt = new Date().toISOString();
+  if (!selectedInfo || !selectedDiagnostic) {
     const summary = {
       startedAt,
-      finishedAt,
+      finishedAt: nowIso(),
       dataset,
-      status: "all_skipped",
+      status: "skipped",
+      selected: null,
       totals: {
         urls: urls.length,
         selected: 0,
-        skipped: events.filter(e => e.event === "url:skip").length,
+        skipped: diagnostics.length,
+        addOk: 0,
+        cartOpenOk: 0,
+        removeOk: 0,
+        flowOk: 0
       },
-      events,
+      diagnostics,
+      events
     };
-    fs.writeFileSync(reportFile, JSON.stringify(summary, null, 2), "utf8");
-    I.say(`WROTE=${reportFile}`);
+
+    writeJson(reportPath, summary);
+    I.say(`WROTE=${reportPath}`);
     return;
   }
 
-  I.saveScreenshot("probe_then_run_pdp.png");
+  selectedDiagnostic.addToCartAttempted = true;
 
-  const clicked = await I.executeScript(() => {
-    const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-    const hints = ["sepete ekle", "add to cart", "add to basket"];
+  const addResult = await clickByHints(I, [
+    "sepete ekle",
+    "add to cart",
+    "add to basket"
+  ]);
 
-    for (const el of nodes) {
-      const txt = (el.innerText || "").toLowerCase();
-      if (!txt) continue;
-      if (!hints.some(h => txt.includes(h))) continue;
+  I.wait(2);
 
-      const r = el.getBoundingClientRect();
-      if (r.width < 10 || r.height < 10) continue;
+  const addVerify = await verifyAddToCart(I);
+  addOk = !!(addResult && addVerify && (addVerify.hasAddedText || addVerify.hasBasketCount));
+  selectedDiagnostic.addVerified = addOk;
 
-      try {
-        el.scrollIntoView({ block: "center" });
-        el.click();
-        return txt;
-      } catch {}
-    }
+  events.push({
+    ts: nowIso(),
+    event: addOk ? "cart:add_verified" : "cart:add_failed",
+    url: selectedInfo.url,
+    current: selectedInfo.current,
+    clickedLabel: addResult || null,
+    verified: addOk,
+    signals: addVerify || null
+  });
 
-    return null;
-  }).catch(() => null);
-
-  if (!clicked) {
-    add("cart:add:skip", {
-      url: selected.url,
-      current: selected.current,
-      reason: "add_to_cart_not_found",
-    });
-
-    const finishedAt = new Date().toISOString();
-    fs.writeFileSync(reportFile, JSON.stringify({
+  if (!addOk) {
+    const summary = {
       startedAt,
-      finishedAt,
+      finishedAt: nowIso(),
       dataset,
-      status: "selected_but_add_not_found",
-      events,
-    }, null, 2), "utf8");
+      status: "failed",
+      selected: selectedInfo,
+      totals: {
+        urls: urls.length,
+        selected: 1,
+        skipped: diagnostics.filter((d) => !d.selected).length,
+        addOk: 0,
+        cartOpenOk: 0,
+        removeOk: 0,
+        flowOk: 0
+      },
+      diagnostics,
+      events
+    };
 
-    I.say(`WROTE=${reportFile}`);
+    writeJson(reportPath, summary);
+    I.say(`WROTE=${reportPath}`);
     return;
   }
 
-  add("cart:add", {
-    url: selected.url,
-    current: selected.current,
-    clickedText: clicked,
+  selectedDiagnostic.cartOpenAttempted = true;
+
+  const cartClick = await clickByHints(I, [
+    "sepetim",
+    "sepete git",
+    "sepet",
+    "go to cart"
+  ], {
+    minWidth: 8,
+    minHeight: 8
   });
 
   I.wait(2);
 
-  const cartClicked = await I.executeScript(() => {
-    const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-    for (const el of nodes) {
-      const txt = (el.innerText || "").toLowerCase();
-      if (!txt) continue;
-      if (!txt.includes("sepet")) continue;
-      try {
-        el.click();
-        return txt;
-      } catch {}
-    }
-    return null;
-  }).catch(() => null);
+  const cartUrl = sanitizeText(await I.grabCurrentUrl());
+  cartOpenOk = cartUrl.includes("sepet");
+  selectedDiagnostic.cartReached = cartOpenOk;
 
-  I.wait(2);
-
-  const cartUrl = await I.grabCurrentUrl().catch(() => "");
-  add("cart:open", {
-    url: selected.url,
+  events.push({
+    ts: nowIso(),
+    event: cartOpenOk ? "cart:open_verified" : "cart:open_failed",
+    url: selectedInfo.url,
     cartUrl,
-    clickedText: cartClicked,
+    clickedLabel: cartClick || null,
+    verified: cartOpenOk
   });
 
-  I.saveScreenshot("probe_then_run_cart.png");
-
-  const removed = await I.executeScript(() => {
-    const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-    const hints = ["sil", "kaldır", "çıkar", "remove", "delete"];
-
-    for (const el of nodes) {
-      const txt = (el.innerText || "").toLowerCase();
-      if (!txt) continue;
-      if (!hints.some(h => txt.includes(h))) continue;
-      try {
-        el.click();
-        return txt;
-      } catch {}
-    }
-
-    return null;
-  }).catch(() => null);
-
-  if (!removed) {
-    add("cart:remove:skip", {
-      url: selected.url,
-      cartUrl,
-      reason: "remove_not_found",
-    });
-  } else {
-    add("cart:remove", {
-      url: selected.url,
-      cartUrl,
-      clickedText: removed,
-    });
-    I.wait(2);
-    I.saveScreenshot("probe_then_run_after_remove.png");
+  if (cartOpenOk) {
+    await safeScreenshot(I, "probe_then_run_cart.png");
   }
 
-  const finishedAt = new Date().toISOString();
+  if (!cartOpenOk) {
+    const summary = {
+      startedAt,
+      finishedAt: nowIso(),
+      dataset,
+      status: "failed",
+      selected: selectedInfo,
+      totals: {
+        urls: urls.length,
+        selected: 1,
+        skipped: diagnostics.filter((d) => !d.selected).length,
+        addOk: addOk ? 1 : 0,
+        cartOpenOk: 0,
+        removeOk: 0,
+        flowOk: 0
+      },
+      diagnostics,
+      events
+    };
+
+    writeJson(reportPath, summary);
+    I.say(`WROTE=${reportPath}`);
+    return;
+  }
+
+  selectedDiagnostic.removeAttempted = true;
+
+  const removeClick = await clickByHints(I, [
+    "sil",
+    "kaldır",
+    "çıkar",
+    "remove",
+    "delete"
+  ], {
+    minWidth: 8,
+    minHeight: 8
+  });
+
+  I.wait(2);
+
+  const removeVerify = await verifyRemoveFromCart(I);
+  removeOk = !!(removeClick && removeVerify && removeVerify.visibleItemCount === 0);
+  selectedDiagnostic.removeVerified = removeOk;
+
+  events.push({
+    ts: nowIso(),
+    event: removeOk ? "cart:remove_verified" : "cart:remove_failed",
+    url: selectedInfo.url,
+    cartUrl: removeVerify?.url || null,
+    clickedLabel: removeClick || null,
+    verified: removeOk,
+    signals: removeVerify || null
+  });
+
+  await safeScreenshot(I, "probe_then_run_after_remove.png");
+
+  const flowOk = addOk && cartOpenOk && removeOk;
+
   const summary = {
     startedAt,
-    finishedAt,
+    finishedAt: nowIso(),
     dataset,
-    status: "completed",
-    selected,
+    status: flowOk ? "passed" : "failed",
+    selected: selectedInfo,
     totals: {
       urls: urls.length,
       selected: 1,
-      skipped: events.filter(e => e.event === "url:skip").length,
-      addOk: events.filter(e => e.event === "cart:add").length,
-      removeOk: events.filter(e => e.event === "cart:remove").length,
+      skipped: diagnostics.filter((d) => !d.selected).length,
+      addOk: addOk ? 1 : 0,
+      cartOpenOk: cartOpenOk ? 1 : 0,
+      removeOk: removeOk ? 1 : 0,
+      flowOk: flowOk ? 1 : 0
     },
-    events,
+    diagnostics,
+    events
   };
 
-  fs.writeFileSync(reportFile, JSON.stringify(summary, null, 2), "utf8");
-  I.say(`WROTE=${reportFile}`);
+  writeJson(reportPath, summary);
+  I.say(`WROTE=${reportPath}`);
 });
+

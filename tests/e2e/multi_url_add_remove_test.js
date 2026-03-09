@@ -1,6 +1,15 @@
 ﻿const fs = require("fs");
 const path = require("path");
 const { I } = inject();
+const {
+  shortenText,
+  isBadPage,
+  safeScreenshot,
+  acceptCookieLikePopups,
+  clickByHints,
+  verifyAddToCart,
+  verifyRemoveFromCart,
+} = require("../helpers/trendyol_shared");
 
 Feature("Trendyol - Multi URL Enterprise Demo (POM)");
 
@@ -16,7 +25,7 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
   const events = [];
   const startedAt = new Date().toISOString();
 
-  function crAdd(event, data = {}) {
+  function add(event, data = {}) {
     events.push({
       ts: new Date().toISOString(),
       event,
@@ -24,46 +33,75 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
     });
   }
 
+  function compactText(value, max = 180) {
+    const s = String(value || "").replace(/\s+/g, " ").trim();
+    return s.length > max ? `${s.slice(0, max)}...` : s;
+  }
+
+function buildSummary(urls, events, startedAt, finishedAt, dataset) {
+    const addOk = events.filter((e) => e.event === "cart:add_verified" && e.verified).length;
+    const cartOpenOk = events.filter(
+      (e) => e.event === "cart:open_verified" && e.verified
+    ).length;
+    const removeOk = events.filter(
+      (e) => e.event === "cart:remove_verified" && e.verified
+    ).length;
+
+    return {
+      startedAt,
+      finishedAt,
+      dataset,
+      totals: {
+        urls: urls.length,
+        opened: events.filter((e) => e.event === "url:open").length,
+        ok: events.filter((e) => e.event === "url:ok").length,
+        skipped: events.filter((e) => e.event === "url:skip").length,
+        addOk,
+        cartOpenOk,
+        removeOk,
+        flowOk: addOk && cartOpenOk && removeOk ? 1 : 0,
+      },
+      events,
+    };
+  }
+
   I.say(`DATASET=${dataset}`);
-  crAdd("run:start", { dataset });
+  add("run:start", { dataset });
 
   if (!fs.existsSync(dataset)) {
-    crAdd("run:error", { reason: "dataset_not_found", dataset });
-    fs.writeFileSync(reportFile, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), events }, null, 2), "utf8");
+    add("run:error", { reason: "dataset_not_found", dataset });
+    fs.writeFileSync(
+      reportFile,
+      JSON.stringify(
+        { startedAt, finishedAt: new Date().toISOString(), dataset, events },
+        null,
+        2
+      ),
+      "utf8"
+    );
     throw new Error(`Dataset not found: ${dataset}`);
   }
 
   const urls = fs
     .readFileSync(dataset, "utf8")
     .split(/\r?\n/)
-    .map(x => x.trim())
+    .map((x) => x.trim())
     .filter(Boolean);
 
   I.say(`URL count=${urls.length}`);
-  crAdd("run:urls", { count: urls.length });
+  add("run:urls", { count: urls.length });
 
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     const idx = i + 1;
 
     I.say(`OPEN [${idx}/${urls.length}] ${url}`);
-    crAdd("url:open", { idx, total: urls.length, url });
+    add("url:open", { idx, total: urls.length, url });
 
     await I.amOnPage(url);
     I.wait(2);
 
-    await I.executeScript(() => {
-      const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-      const hints = ["kabul", "accept", "agree", "tamam", "ok", "kapat"];
-
-      for (const el of nodes) {
-        const txt = (el.innerText || "").toLowerCase();
-        if (!txt) continue;
-        if (hints.some(h => txt.includes(h))) {
-          try { el.click(); } catch {}
-        }
-      }
-    }).catch(() => {});
+    await acceptCookieLikePopups(I);
 
     const current = await I.grabCurrentUrl().catch(() => "");
     const title = await I.grabTitle().catch(() => "");
@@ -71,21 +109,9 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
     I.say(`CURRENT=${current}`);
     I.say(`TITLE=${title}`);
 
-    const listingLike =
-      !current.includes("-p-") ||
-      current.includes("/sr?") ||
-      current.includes("/sirali-urunler") ||
-      current.includes("/cok-satanlar") ||
-      current.includes("butik/liste");
-
-    const genericTitle =
-      (title || "").includes("Online Alışveriş Sitesi") ||
-      (title || "").includes("Türkiye’nin Trend Yolu") ||
-      (title || "").includes("Arama Sonuçları");
-
-    if (listingLike || genericTitle) {
+    if (isBadPage(current, title)) {
       I.say(`SKIP: not product page -> ${current}`);
-      crAdd("url:skip", {
+      add("url:skip", {
         idx,
         total: urls.length,
         url,
@@ -96,7 +122,7 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
       continue;
     }
 
-    crAdd("url:ok", {
+    add("url:ok", {
       idx,
       total: urls.length,
       url,
@@ -104,33 +130,21 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
       title,
     });
 
-    I.saveScreenshot(`pdp_${idx}.png`);
+    await safeScreenshot(I, `pdp_${idx}.png`);
 
-    const clicked = await I.executeScript(() => {
-      const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-      const hints = ["sepete ekle", "add to cart", "add to basket"];
-
-      for (const el of nodes) {
-        const txt = (el.innerText || "").toLowerCase();
-        if (!txt) continue;
-        if (!hints.some(h => txt.includes(h))) continue;
-
-        const r = el.getBoundingClientRect();
-        if (r.width < 10 || r.height < 10) continue;
-
-        try {
-          el.scrollIntoView({ block: "center" });
-          el.click();
-          return txt;
-        } catch {}
+    const addClickedText = await clickByHints(I, 
+      ["sepete ekle", "add to cart", "add to basket"],
+      {
+        selectors: "button,a,div,span",
+        minWidth: 10,
+        minHeight: 10,
+        scrollIntoView: true,
       }
+    );
 
-      return null;
-    }).catch(() => null);
-
-    if (!clicked) {
+    if (!addClickedText) {
       I.say("SKIP: add-to-cart not found");
-      crAdd("cart:add:skip", {
+      add("cart:add:skip", {
         idx,
         total: urls.length,
         url,
@@ -140,68 +154,69 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
       continue;
     }
 
-    I.say(`[add-to-cart] clicked: ${clicked}`);
-    crAdd("cart:add", {
+    I.wait(2);
+
+    const addSignals = await verifyAddToCart(I);
+    const addVerified = !!(addSignals.hasAddedText || addSignals.hasBasketCount);
+
+    I.say(`[add-to-cart] clicked: ${addClickedText}`);
+    add("cart:add_verified", {
       idx,
       total: urls.length,
       url,
-      current,
-      clickedText: clicked,
+      current: addSignals.url || current,
+      clickedLabel: compactText(addClickedText),
+      verified: addVerified,
+      signals: addSignals,
     });
 
-    I.wait(2);
-
-    const cartClicked = await I.executeScript(() => {
-      const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-
-      for (const el of nodes) {
-        const txt = (el.innerText || "").toLowerCase();
-        if (!txt) continue;
-
-        if (txt.includes("sepet")) {
-          try {
-            el.click();
-            return txt;
-          } catch {}
-        }
+    const cartClickedText = await clickByHints(I, 
+      ["sepetim", "sepete git", "sepet", "go to cart"],
+      {
+        selectors: "button,a,div,span",
+        minWidth: 8,
+        minHeight: 8,
+        scrollIntoView: true,
       }
-
-      return null;
-    }).catch(() => null);
+    );
 
     I.wait(2);
 
-    const cartUrl = await I.grabCurrentUrl().catch(() => "");
-    crAdd("cart:open", {
+    let cartUrl = await I.grabCurrentUrl().catch(() => "");
+    let cartOpenVerified = false;
+
+    if (cartUrl.includes("sepet")) {
+      cartOpenVerified = true;
+    } else {
+      await I.amOnPage("/sepetim");
+      I.wait(2);
+      cartUrl = await I.grabCurrentUrl().catch(() => "");
+      cartOpenVerified = cartUrl.includes("sepet");
+    }
+
+    add("cart:open_verified", {
       idx,
       total: urls.length,
       url,
       cartUrl,
-      clickedText: cartClicked,
+      clickedLabel: compactText(cartClickedText),
+      verified: cartOpenVerified,
     });
 
-    I.saveScreenshot(`cart_${idx}.png`);
+    await safeScreenshot(I, `cart_${idx}.png`);
 
-    const removed = await I.executeScript(() => {
-      const nodes = Array.from(document.querySelectorAll("button,a,div,span"));
-      const hints = ["sil", "kaldır", "çıkar", "remove", "delete"];
-
-      for (const el of nodes) {
-        const txt = (el.innerText || "").toLowerCase();
-        if (!txt) continue;
-        if (!hints.some(h => txt.includes(h))) continue;
-
-        try {
-          el.click();
-          return txt;
-        } catch {}
+    const removeClickedText = await clickByHints(I, 
+      ["sil", "kaldır", "çıkar", "remove", "delete"],
+      {
+        selectors: "button,a,div,span",
+        minWidth: 8,
+        minHeight: 8,
+        scrollIntoView: true,
       }
+    );
 
-      return null;
-    }).catch(() => null);
-
-    if (!removed) {
-      crAdd("cart:remove:skip", {
+    if (!removeClickedText) {
+      add("cart:remove:skip", {
         idx,
         total: urls.length,
         url,
@@ -212,34 +227,54 @@ Scenario("Products list -> open -> add-to-cart -> cart -> remove -> summary (POM
       continue;
     }
 
-    crAdd("cart:remove", {
+    I.wait(2);
+
+    const removeSignals = await verifyRemoveFromCart(I);
+    const removeVerified = !!(
+      removeSignals.stillOnCartPage &&
+      (removeSignals.emptyLike || removeSignals.visibleItemCount === 0)
+    );
+
+    add("cart:remove_verified", {
       idx,
       total: urls.length,
       url,
       cartUrl,
-      clickedText: removed,
+      clickedLabel: compactText(removeClickedText),
+      verified: removeVerified,
+      signals: removeSignals,
     });
 
-    I.wait(2);
-    I.saveScreenshot(`after_remove_${idx}.png`);
+    await safeScreenshot(I, `after_remove_${idx}.png`);
   }
 
-  const finishedAt = new Date().toISOString();
-  const summary = {
-    startedAt,
-    finishedAt,
-    dataset,
-    totals: {
-      urls: urls.length,
-      opened: events.filter(e => e.event === "url:open").length,
-      ok: events.filter(e => e.event === "url:ok").length,
-      skipped: events.filter(e => e.event === "url:skip").length,
-      addOk: events.filter(e => e.event === "cart:add").length,
-      removeOk: events.filter(e => e.event === "cart:remove").length,
-    },
+  const summary = buildSummary(
+    urls,
     events,
-  };
+    startedAt,
+    new Date().toISOString(),
+    dataset
+  );
 
   fs.writeFileSync(reportFile, JSON.stringify(summary, null, 2), "utf8");
   I.say(`WROTE=${reportFile}`);
+
+  if (summary.totals.flowOk !== 1) {
+    throw new Error(`Flow failed. totals=${JSON.stringify(summary.totals)}`);
+  }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

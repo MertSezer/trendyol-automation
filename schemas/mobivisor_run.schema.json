@@ -1,0 +1,92 @@
+﻿{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Mobivisor Run Report",
+  "type": "object",
+  "required": [
+    "project",
+    "schemaVersion",
+    "generatedAt",
+    "overallStatus",
+    "environment",
+    "flows",
+    "artifacts"
+  ],
+  "properties": {
+    "project": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "overallStatus": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "failed"]
+    },
+    "environment": {
+      "type": "object",
+      "required": ["cwd", "node", "npm", "dockerServer", "os", "machine"],
+      "properties": {
+        "cwd": { "type": "string" },
+        "node": { "type": "string" },
+        "npm": { "type": "string" },
+        "dockerServer": { "type": "string" },
+        "os": { "type": "string" },
+        "machine": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "flows": {
+      "type": "object",
+      "required": ["golden", "intermittent"],
+      "properties": {
+        "golden": { "$ref": "#/definitions/flowReport" },
+        "intermittent": { "$ref": "#/definitions/flowReport" }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/artifact" }
+    }
+  },
+  "definitions": {
+    "flowReport": {
+      "type": "object",
+      "required": ["status", "dataset", "startedAt", "finishedAt", "totals"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["passed", "skipped", "failed"]
+        },
+        "dataset": { "type": "string" },
+        "startedAt": { "type": "string" },
+        "finishedAt": { "type": "string" },
+        "totals": {
+          "type": "object",
+          "required": ["urls"],
+          "properties": {
+            "urls": { "type": "number" },
+            "opened": { "type": "number" },
+            "ok": { "type": "number" },
+            "skipped": { "type": "number" },
+            "selected": { "type": "number" },
+            "addOk": { "type": "number" },
+            "cartOpenOk": { "type": "number" },
+            "removeOk": { "type": "number" },
+            "flowOk": { "type": "number" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "exists", "size"],
+      "properties": {
+        "path": { "type": "string" },
+        "exists": { "type": "boolean" },
+        "size": { "type": "number" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
