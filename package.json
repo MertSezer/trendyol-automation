@@ -1,4 +1,4 @@
-{
+﻿{
     "name":  "trendyol-automation",
     "version":  "1.0.0",
     "description":  "",
@@ -13,7 +13,24 @@
                     "e2e:colors":  "chcp 65001 \u003enul \u0026\u0026 cross-env DEMO_MODE=1 TOP_COLORS=3 TESTS=tests/e2e/top_colors_add_remove_test.js DATASET=datasets/demo.txt npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose",
                     "report":  "node ./scripts/render_summary_md.js",
                     "ci:download":  "powershell -ExecutionPolicy Bypass -File ./scripts/download_ci_artifacts.ps1 -Timestamp",
-                    "gate":  "node ./scripts/quality_gate.js"
+                    "gate":  "node ./scripts/quality_gate.js",
+                    "docker:up":  "docker compose up -d",
+                    "docker:down":  "docker compose down",
+                    "docker:ps":  "docker compose ps",
+                    "test:probe":  "chcp 65001 \u003enul \u0026\u0026 cross-env TESTS=tests/e2e/probe_then_run_test.js DATASET=datasets/all_candidates.txt npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose",
+                    "test:golden":  "chcp 65001 \u003enul \u0026\u0026 cross-env TESTS=tests/e2e/multi_url_add_remove_test.js DATASET=datasets/golden_flow_passed.txt npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose",
+                    "test:intermittent":  "chcp 65001 \u003enul \u0026\u0026 cross-env TESTS=tests/e2e/probe_then_run_test.js DATASET=datasets/candidate_intermittent.txt npx codeceptjs run --config ./codecept.ci.conf.js --steps --verbose",
+                    "mobivisor:aggregate":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_mobivisor_run.ps1",
+                    "mobivisor:run":  "npm run test:golden \u0026\u0026 npm run test:intermittent \u0026\u0026 npm run mobivisor:aggregate \u0026\u0026 npm run report:mobivisor \u0026\u0026 npm run verify:mobivisor \u0026\u0026 npm run bundle:mobivisor",
+                    "report:mobivisor":  "powershell -ExecutionPolicy Bypass -File ./scripts/render_mobivisor_summary.ps1",
+                    "validate:mobivisor":  "node ./scripts/validate_mobivisor_run.js",
+                    "gate:mobivisor":  "node ./scripts/gate_mobivisor_run.js",
+                    "verify:mobivisor":  "npm run validate:mobivisor \u0026\u0026 npm run gate:mobivisor",
+                    "bundle:mobivisor":  "node ./scripts/bundle_mobivisor.js",
+                    "mobivisor:daily":  "npm run mobivisor:run",
+                    "mobivisor:status":  "powershell -ExecutionPolicy Bypass -File ./scripts/show_mobivisor_status.ps1",
+                    "dataset:coverage":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_trendyol_coverage_dataset.ps1",
+                    "coverage:summary":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_trendyol_coverage_summary.ps1"
                 },
     "keywords":  [
 
@@ -24,6 +41,8 @@
     "devDependencies":  {
                             "@playwright/test":  "^1.58.2",
                             "@wdio/protocols":  "^9.24.0",
+                            "ajv":  "^8.18.0",
+                            "ajv-formats":  "^3.0.1",
                             "chromedriver":  "^146.0.0",
                             "codeceptjs":  "^3.7.6",
                             "cross-env":  "^10.1.0",
