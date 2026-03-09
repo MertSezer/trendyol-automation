@@ -1,93 +1,106 @@
 ﻿[
     {
-        "url":  "https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007\u0026merchantId=968",
-        "brand":  "dark-seer",
-        "category":  "shoes",
         "id":  "shoe_001",
-        "merchantHint":  "968"
+        "url":  "https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007\u0026merchantId=968",
+        "merchantHint":  "968",
+        "classification":  "golden_safe",
+        "category":  "shoes",
+        "brand":  "dark-seer"
     },
     {
-        "url":  "https://www.trendyol.com/dark-seer/beyaz-buz-unisex-sneaker-p-130327366?boutiqueId=681430\u0026merchantId=968",
-        "brand":  "dark-seer",
-        "category":  "shoes",
         "id":  "shoe_002",
-        "merchantHint":  "968"
+        "url":  "https://www.trendyol.com/dark-seer/beyaz-buz-unisex-sneaker-p-130327366?boutiqueId=681430\u0026merchantId=968",
+        "merchantHint":  "968",
+        "classification":  "direct_add",
+        "category":  "shoes",
+        "brand":  "dark-seer"
     },
     {
-        "url":  "https://www.trendyol.com/puma/shuffle-ayakkabi-p-815873991?boutiqueId=61\u0026merchantId=62",
-        "brand":  "puma",
-        "category":  "shoes",
         "id":  "shoe_003",
-        "merchantHint":  "62"
+        "url":  "https://www.trendyol.com/puma/shuffle-ayakkabi-p-815873991?boutiqueId=61\u0026merchantId=62",
+        "merchantHint":  "62",
+        "classification":  "direct_add",
+        "category":  "shoes",
+        "brand":  "puma"
     },
     {
-        "url":  "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906479399?boutiqueId=61\u0026merchantId=333333",
-        "brand":  "big-king",
-        "category":  "shoes",
         "id":  "shoe_004",
-        "merchantHint":  "333333"
+        "url":  "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906479399?boutiqueId=61\u0026merchantId=333333",
+        "merchantHint":  "333333",
+        "classification":  "direct_add",
+        "category":  "shoes",
+        "brand":  "big-king"
     },
     {
-        "url":  "https://www.trendyol.com/dark-seer/beyaz-fume-erkek-sneaker-p-100991468?boutiqueId=681430\u0026merchantId=968",
-        "brand":  "dark-seer",
-        "category":  "shoes",
         "id":  "shoe_005",
-        "merchantHint":  "968"
+        "url":  "https://www.trendyol.com/dark-seer/beyaz-fume-erkek-sneaker-p-100991468?boutiqueId=681430\u0026merchantId=968",
+        "merchantHint":  "968",
+        "classification":  "golden_safe",
+        "category":  "shoes",
+        "brand":  "dark-seer"
     },
     {
-        "url":  "https://www.trendyol.com/efnanshoes/efnan-shoes-erkek-gunluk-ortopedik-taban-rahat-esnek-lastikli-garantili-ayakkabi-p-1104426884?boutiqueId=61\u0026merchantId=987187",
-        "brand":  "efnanshoes",
-        "category":  "shoes",
         "id":  "shoe_006",
-        "merchantHint":  "987187"
+        "url":  "https://www.trendyol.com/efnanshoes/efnan-shoes-erkek-gunluk-ortopedik-taban-rahat-esnek-lastikli-garantili-ayakkabi-p-1104426884?boutiqueId=61\u0026merchantId=987187",
+        "merchantHint":  "987187",
+        "classification":  "direct_add",
+        "category":  "shoes",
+        "brand":  "efnanshoes"
     },
     {
-        "url":  "https://www.trendyol.com/tonny-black/unisex-beyaz-siyah-termo-taban-yani-seritli-bagcikli-spor-ayakkabi-p-879885114?boutiqueId=61\u0026merchantId=106292",
-        "brand":  "tonny-black",
-        "category":  "shoes",
         "id":  "shoe_007",
-        "merchantHint":  "106292"
+        "url":  "https://www.trendyol.com/tonny-black/unisex-beyaz-siyah-termo-taban-yani-seritli-bagcikli-spor-ayakkabi-p-879885114?boutiqueId=61\u0026merchantId=106292",
+        "merchantHint":  "106292",
+        "classification":  "direct_add",
+        "category":  "shoes",
+        "brand":  "tonny-black"
     },
     {
-        "url":  "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906478247?boutiqueId=61\u0026merchantId=333333",
-        "brand":  "big-king",
-        "category":  "shoes",
         "id":  "shoe_008",
-        "merchantHint":  "333333"
+        "url":  "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906478247?boutiqueId=61\u0026merchantId=333333",
+        "merchantHint":  "333333",
+        "classification":  "direct_add",
+        "category":  "shoes",
+        "brand":  "big-king"
     },
     {
-        "url":  "https://www.trendyol.com/genel-markalar/unisex-spor-ayakkabi-gunluk-sneakers-p-46563277?boutiqueId=61\u0026merchantId=1124946",
-        "brand":  "genel-markalar",
-        "category":  "shoes",
         "id":  "shoe_009",
-        "merchantHint":  "1124946"
+        "url":  "https://www.trendyol.com/genel-markalar/unisex-spor-ayakkabi-gunluk-sneakers-p-46563277?boutiqueId=61\u0026merchantId=1124946",
+        "merchantHint":  "1124946",
+        "classification":  "skip_expected",
+        "category":  "shoes",
+        "brand":  "genel-markalar"
     },
     {
-        "url":  "https://www.trendyol.com/e-sport/gunluk-siyah-beyaz-erkek-sneaker-ayakkabi-p-973314608?boutiqueId=61\u0026merchantId=979689",
-        "brand":  "e-sport",
-        "category":  "shoes",
         "id":  "shoe_010",
-        "merchantHint":  "979689"
-    },
-    {
-        "url":  "https://www.trendyol.com/by-oxford/erkek-gunluk-hafif-poli-dikisli-taban-yuruyus-garantili-spor-ayakkabi-p-818931226?boutiqueId=61\u0026merchantId=625799",
-        "brand":  "by-oxford",
+        "url":  "https://www.trendyol.com/e-sport/gunluk-siyah-beyaz-erkek-sneaker-ayakkabi-p-973314608?boutiqueId=61\u0026merchantId=979689",
+        "merchantHint":  "979689",
+        "classification":  "variant_required",
         "category":  "shoes",
+        "brand":  "e-sport"
+    },
+    {
         "id":  "shoe_011",
-        "merchantHint":  "625799"
+        "url":  "https://www.trendyol.com/by-oxford/erkek-gunluk-hafif-poli-dikisli-taban-yuruyus-garantili-spor-ayakkabi-p-818931226?boutiqueId=61\u0026merchantId=625799",
+        "merchantHint":  "625799",
+        "classification":  "variant_required",
+        "category":  "shoes",
+        "brand":  "by-oxford"
     },
     {
-        "url":  "https://www.trendyol.com/sebir-moda/kareli-triko-atki-p-1032872467?boutiqueId=61\u0026merchantId=1014897",
-        "brand":  "sebir-moda",
-        "category":  "scarves",
         "id":  "scarf_001",
-        "merchantHint":  "1014897"
+        "url":  "https://www.trendyol.com/sebir-moda/kareli-triko-atki-p-1032872467?boutiqueId=61\u0026merchantId=1014897",
+        "merchantHint":  "1014897",
+        "classification":  "skip_expected",
+        "category":  "scarves",
+        "brand":  "sebir-moda"
     },
     {
-        "url":  "https://www.trendyol.com/chuba/erkek-sac-orgu-atki-gri-23w502-p-369358971?boutiqueId=61\u0026merchantId=108999",
-        "brand":  "chuba",
-        "category":  "scarves",
         "id":  "scarf_002",
-        "merchantHint":  "108999"
+        "url":  "https://www.trendyol.com/chuba/erkek-sac-orgu-atki-gri-23w502-p-369358971?boutiqueId=61\u0026merchantId=108999",
+        "merchantHint":  "108999",
+        "classification":  "golden_safe",
+        "category":  "scarves",
+        "brand":  "chuba"
     }
 ]

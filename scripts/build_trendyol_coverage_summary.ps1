@@ -13,6 +13,7 @@ $items = Get-Content $datasetPath -Raw | ConvertFrom-Json
 $total = @($items).Count
 $categoryGroups = $items | Group-Object category | Sort-Object Name
 $brandGroups = $items | Group-Object brand | Sort-Object Name
+$classGroups = $items | Group-Object classification | Sort-Object Name
 $generatedAt = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssK")
 
 $lines = @()
@@ -37,9 +38,17 @@ foreach ($g in $brandGroups) {
 }
 
 $lines += ""
+$lines += "## Classification Breakdown"
+
+foreach ($g in $classGroups) {
+    $lines += "- $($g.Name): $($g.Count)"
+}
+
+$lines += ""
 $lines += "## Notes"
-$lines += "- This summary describes dataset coverage only."
-$lines += "- It does not yet include execution outcomes."
+$lines += "- This summary describes real Trendyol URL coverage."
+$lines += "- Classifications are used to reduce brittle runs and improve execution efficiency."
+$lines += "- It does not yet include per-run execution outcomes."
 
 $lines | Set-Content $outputPath -Encoding UTF8
 

@@ -4,6 +4,7 @@
         category = "shoes"
         brand = "dark-seer"
         merchantHint = "968"
+        classification = "golden_safe"
         url = "https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968"
     },
     @{
@@ -11,6 +12,7 @@
         category = "shoes"
         brand = "dark-seer"
         merchantHint = "968"
+        classification = "direct_add"
         url = "https://www.trendyol.com/dark-seer/beyaz-buz-unisex-sneaker-p-130327366?boutiqueId=681430&merchantId=968"
     },
     @{
@@ -18,6 +20,7 @@
         category = "shoes"
         brand = "puma"
         merchantHint = "62"
+        classification = "direct_add"
         url = "https://www.trendyol.com/puma/shuffle-ayakkabi-p-815873991?boutiqueId=61&merchantId=62"
     },
     @{
@@ -25,6 +28,7 @@
         category = "shoes"
         brand = "big-king"
         merchantHint = "333333"
+        classification = "direct_add"
         url = "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906479399?boutiqueId=61&merchantId=333333"
     },
     @{
@@ -32,6 +36,7 @@
         category = "shoes"
         brand = "dark-seer"
         merchantHint = "968"
+        classification = "golden_safe"
         url = "https://www.trendyol.com/dark-seer/beyaz-fume-erkek-sneaker-p-100991468?boutiqueId=681430&merchantId=968"
     },
     @{
@@ -39,6 +44,7 @@
         category = "shoes"
         brand = "efnanshoes"
         merchantHint = "987187"
+        classification = "direct_add"
         url = "https://www.trendyol.com/efnanshoes/efnan-shoes-erkek-gunluk-ortopedik-taban-rahat-esnek-lastikli-garantili-ayakkabi-p-1104426884?boutiqueId=61&merchantId=987187"
     },
     @{
@@ -46,6 +52,7 @@
         category = "shoes"
         brand = "tonny-black"
         merchantHint = "106292"
+        classification = "direct_add"
         url = "https://www.trendyol.com/tonny-black/unisex-beyaz-siyah-termo-taban-yani-seritli-bagcikli-spor-ayakkabi-p-879885114?boutiqueId=61&merchantId=106292"
     },
     @{
@@ -53,6 +60,7 @@
         category = "shoes"
         brand = "big-king"
         merchantHint = "333333"
+        classification = "direct_add"
         url = "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906478247?boutiqueId=61&merchantId=333333"
     },
     @{
@@ -60,6 +68,7 @@
         category = "shoes"
         brand = "genel-markalar"
         merchantHint = "1124946"
+        classification = "skip_expected"
         url = "https://www.trendyol.com/genel-markalar/unisex-spor-ayakkabi-gunluk-sneakers-p-46563277?boutiqueId=61&merchantId=1124946"
     },
     @{
@@ -67,6 +76,7 @@
         category = "shoes"
         brand = "e-sport"
         merchantHint = "979689"
+        classification = "variant_required"
         url = "https://www.trendyol.com/e-sport/gunluk-siyah-beyaz-erkek-sneaker-ayakkabi-p-973314608?boutiqueId=61&merchantId=979689"
     },
     @{
@@ -74,6 +84,7 @@
         category = "shoes"
         brand = "by-oxford"
         merchantHint = "625799"
+        classification = "variant_required"
         url = "https://www.trendyol.com/by-oxford/erkek-gunluk-hafif-poli-dikisli-taban-yuruyus-garantili-spor-ayakkabi-p-818931226?boutiqueId=61&merchantId=625799"
     },
     @{
@@ -81,6 +92,7 @@
         category = "scarves"
         brand = "sebir-moda"
         merchantHint = "1014897"
+        classification = "skip_expected"
         url = "https://www.trendyol.com/sebir-moda/kareli-triko-atki-p-1032872467?boutiqueId=61&merchantId=1014897"
     },
     @{
@@ -88,12 +100,13 @@
         category = "scarves"
         brand = "chuba"
         merchantHint = "108999"
+        classification = "golden_safe"
         url = "https://www.trendyol.com/chuba/erkek-sac-orgu-atki-gri-23w502-p-369358971?boutiqueId=61&merchantId=108999"
     }
 )
 
 New-Item -ItemType Directory -Force .\datasets | Out-Null
-$items | ConvertTo-Json -Depth 5 | Set-Content .\datasets\trendyol_coverage_urls.json -Encoding UTF8
+$items | ConvertTo-Json -Depth 6 | Set-Content .\datasets\trendyol_coverage_urls.json -Encoding UTF8
 
 Write-Host "WROTE=.\datasets\trendyol_coverage_urls.json"
 Write-Host "COUNT=$($items.Count)"
