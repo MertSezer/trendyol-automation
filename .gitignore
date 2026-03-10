@@ -1,8 +1,5 @@
-node_modules/
-_ci_artifacts/
-output/
+﻿node_modules
 .env
 
-products.txt
-
-src/config/
+output/*
+!output/.gitkeep
