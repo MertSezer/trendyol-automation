@@ -6,3 +6,9 @@ output/*
 
 _ci_artifacts/
 products.txt
+
+# Local debug / downloaded artifacts
+artifacts/ball-variant-download/
+artifacts/ball-variant-real-check/
+page.html
+scripts/demo.js
