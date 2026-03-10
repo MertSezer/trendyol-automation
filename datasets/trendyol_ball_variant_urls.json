@@ -1,0 +1,13 @@
+﻿[
+  {
+    "id": "variant_product_seed",
+    "platform": "trendyol",
+    "category": "ball",
+    "classification": "multi_color_variant",
+    "url": "",
+    "metadata": {
+      "variantType": "color",
+      "expectedColors": ["Kirmizi", "Mavi"]
+    }
+  }
+]
