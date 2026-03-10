@@ -1,4 +1,4 @@
-﻿const { I } = inject();
+const { I } = inject();
 
 class ProductPage {
   open(url) {
@@ -234,8 +234,6 @@ class ProductPage {
   }
 
   async addToCart() {
-    await this.dismissBlockingOverlays();
-
     const selectorCandidates = [
       '[data-testid="add-to-cart-button"]',
       '[data-testid*="add-to-cart"]',
@@ -245,39 +243,79 @@ class ProductPage {
       'button[class*="basket"]'
     ];
 
-    const directClicked = await this.robustClick(selectorCandidates);
-    if (directClicked) {
-      I.wait(2);
-      return true;
-    }
-
     const locatorCandidates = [
       locate("button").withText("Sepete Ekle"),
       locate("button").withText("Sepete ekle"),
+      locate("button").withText("Sepete Eklendi"),
       locate("button").withText("Add to Cart"),
       locate("button").withText("Add to Basket"),
       locate("a").withText("Sepete Ekle")
     ];
 
-    for (const candidate of locatorCandidates) {
-      try {
-        const clicked = await this.robustClick(candidate);
-        if (clicked) {
-          I.wait(2);
-          return true;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.dismissBlockingOverlays();
+      I.wait(1);
+
+      const directClicked = await this.robustClick(selectorCandidates);
+      if (directClicked) {
+        I.wait(2);
+        return true;
+      }
+
+      for (const candidate of locatorCandidates) {
+        try {
+          const clicked = await this.robustClick(candidate);
+          if (clicked) {
+            I.wait(2);
+            return true;
+          }
+        } catch (e) {}
+      }
+
+      const clickedByText = await this.clickByTextHints([
+        "sepete ekle",
+        "sepete eklendi",
+        "add to cart",
+        "add to basket"
+      ]);
+
+      if (clickedByText) {
+        I.wait(2);
+        return true;
+      }
+
+      const clickedByJs = await I.executeScript((selectors) => {
+        const visible = (el) => {
+          if (!el) return false;
+          const r = el.getBoundingClientRect();
+          const style = window.getComputedStyle(el);
+          return (
+            r.width >= 10 &&
+            r.height >= 10 &&
+            style.visibility !== "hidden" &&
+            style.display !== "none"
+          );
+        };
+
+        for (const selector of selectors) {
+          const nodes = Array.from(document.querySelectorAll(selector));
+          for (const el of nodes) {
+            if (!visible(el)) continue;
+            try {
+              el.scrollIntoView({ block: "center", inline: "center" });
+              el.click();
+              return selector;
+            } catch (_) {}
+          }
         }
-      } catch (e) {}
-    }
 
-    const clickedByText = await this.clickByTextHints([
-      "sepete ekle",
-      "add to cart",
-      "add to basket"
-    ]);
+        return null;
+      }, selectorCandidates);
 
-    if (clickedByText) {
-      I.wait(2);
-      return true;
+      if (clickedByJs) {
+        I.wait(2);
+        return true;
+      }
     }
 
     throw new Error("ADD_TO_CART_BUTTON_NOT_FOUND");
