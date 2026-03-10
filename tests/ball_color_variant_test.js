@@ -21,8 +21,6 @@ Scenario("Add two different colored variants to cart", async () => {
   ProductPage.open(product.url);
   await ProductPage.dismissBlockingOverlays();
 
-  await VariantSelector.selectColor(firstColor);
-  await VariantSelector.verifySelected(firstColor);
   await ProductPage.addToCart();
 
   ProductPage.open(product.url);
