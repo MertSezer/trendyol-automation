@@ -27,7 +27,15 @@ $placeholderPatterns = @(
     'BURAYA_GERCEK_TRENDYOL_URUN_LINKI'
 )
 
-if ($placeholderPatterns | Where-Object { $url -match $_ }) {
+$hasPlaceholderUrl = $false
+foreach ($pattern in $placeholderPatterns) {
+    if ($url -match $pattern) {
+        $hasPlaceholderUrl = $true
+        break
+    }
+}
+
+if ($hasPlaceholderUrl) {
     Write-Host "BALL_VARIANT_RUN_FAILED=PLACEHOLDER_URL"
     Write-Host "URL=$url"
     exit 1
@@ -50,7 +58,15 @@ $placeholderColors = @(
     'BURAYA_2_RENK'
 )
 
-if ($colors | Where-Object { $placeholderColors -contains [string]$_ }) {
+$hasPlaceholderColor = $false
+foreach ($color in $colors) {
+    if ($placeholderColors -contains [string]$color) {
+        $hasPlaceholderColor = $true
+        break
+    }
+}
+
+if ($hasPlaceholderColor) {
     Write-Host "BALL_VARIANT_RUN_FAILED=PLACEHOLDER_COLOR"
     Write-Host "COLORS=$($colors -join ',')"
     exit 1
