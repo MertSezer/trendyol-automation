@@ -3,12 +3,12 @@
   "platform": "trendyol",
   "category": "ball",
   "classification": "multi_color_variant",
-  "url": "URL_BURAYA",
+  "url": "BURAYA_GERCEK_TRENDYOL_URUN_LINKI",
   "metadata": {
     "variantType": "color",
     "expectedColors": [
-      "RENK1",
-      "RENK2"
+      "BURAYA_1_RENK",
+      "BURAYA_2_RENK"
     ]
   }
 }
