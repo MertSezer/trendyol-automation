@@ -1,4 +1,4 @@
-﻿const rawDataset = require("../datasets/trendyol_ball_variant_urls.json");
+const rawDataset = require("../datasets/trendyol_ball_variant_urls.json");
 const dataset = Array.isArray(rawDataset) ? rawDataset : [rawDataset];
 
 const ProductPage = require("../pages/ProductPage");
