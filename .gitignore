@@ -1,8 +1,17 @@
-node_modules/
-_ci_artifacts/
-output/
+﻿node_modules
 .env
 
+output/*
+!output/.gitkeep
+
+_ci_artifacts/
 products.txt
 
-src/config/
+# Local debug / downloaded artifacts
+artifacts/ball-variant-download/
+artifacts/ball-variant-real-check/
+page.html
+scripts/demo.js
+
+artifacts/ball-variant-latest/
+artifacts/ball-variant-next/

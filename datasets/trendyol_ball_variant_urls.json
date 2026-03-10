@@ -1,13 +1,14 @@
-﻿[
-  {
-    "id": "variant_product_seed",
-    "platform": "trendyol",
-    "category": "ball",
-    "classification": "multi_color_variant",
-    "url": "",
-    "metadata": {
-      "variantType": "color",
-      "expectedColors": ["Kirmizi", "Mavi"]
-    }
+{
+  "id": "ball_variant_001",
+  "platform": "trendyol",
+  "category": "ball",
+  "classification": "multi_color_variant",
+  "url": "https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968",
+  "metadata": {
+    "variantType": "color",
+    "expectedColors": [
+      "Beyaz",
+      "Siyah"
+    ]
   }
-]
+}
