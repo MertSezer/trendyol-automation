@@ -2,37 +2,18 @@
 
 const runMode = (process.env.RUN_MODE || 'e2e').toLowerCase();
 
-function makeCapabilities(browser) {
-  const commonArgs = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'];
-  const b = (browser || '').toLowerCase();
-
-  const common = {
-    webSocketUrl: false,
-    'wdio:enforceWebDriverClassic': true,
-    pageLoadStrategy: 'eager',
-    unhandledPromptBehavior: 'ignore',
-  };
-
-  if (b === 'edge' || b === 'microsoftedge') {
-    return {
-      ...common,
-      browserName: 'MicrosoftEdge',
-      'ms:edgeOptions': { args: commonArgs }
-    };
-  }
-
-  return {
-    ...common,
-    browserName: 'chrome',
-    'goog:chromeOptions': { args: commonArgs }
-  };
-}
-
-const browser = process.env.BROWSER || 'edge';
-
 const helpers = {
-  CaseReport: { require: './helpers/caseReport.js', outputDir: './output', file: 'case_report.json' },
-  ReportHelper: { require: './helpers/report.js', outputDir: './output', summaryFile: 'summary.json', markdownFile: 'summary.md' },
+  CaseReport: {
+    require: './helpers/caseReport.js',
+    outputDir: './output',
+    file: 'case_report.json'
+  },
+  ReportHelper: {
+    require: './helpers/report.js',
+    outputDir: './output',
+    summaryFile: 'summary.json',
+    markdownFile: 'summary.md'
+  },
 };
 
 if (runMode === 'e2e') {
@@ -42,13 +23,28 @@ if (runMode === 'e2e') {
     host: process.env.SELENIUM_HOST || '127.0.0.1',
     port: Number(process.env.SELENIUM_PORT || 4444),
     path: '/',
-    browser,
+    browser: 'MicrosoftEdge',
     restart: true,
     windowSize: '1280x900',
     smartWait: 10000,
     waitForTimeout: 15000,
     timeouts: { script: 60000, 'page load': 30000 },
-    capabilities: makeCapabilities(browser),
+
+    capabilities: {
+      browserName: 'MicrosoftEdge',
+      'ms:edgeOptions': {
+        binary: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+        args: [
+          '--no-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu'
+        ]
+      },
+      'wdio:enforceWebDriverClassic': true,
+      webSocketUrl: false,
+      pageLoadStrategy: 'eager',
+      unhandledPromptBehavior: 'ignore'
+    }
   };
 }
 
