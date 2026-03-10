@@ -33,7 +33,8 @@
                     "coverage:summary":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_trendyol_coverage_summary.ps1",
                     "golden:build":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_golden_candidates.ps1",
                     "testcases:generate":  "powershell -ExecutionPolicy Bypass -File ./scripts/build_generated_test_cases.ps1",
-                    "test:ball-variants":  "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1"
+                    "test:ball-variants":  "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1",
+                    "test:ball-variants:ci":  "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1"
                 },
     "keywords":  [
 
