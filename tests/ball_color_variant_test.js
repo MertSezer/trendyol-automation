@@ -1,21 +1,13 @@
 ﻿const rawDataset = require("../datasets/trendyol_ball_variant_urls.json");
 const dataset = Array.isArray(rawDataset) ? rawDataset : [rawDataset];
 
-const {
-  dismissBlockingOverlays,
-  selectColorVariant,
-  verifyColorSelectionApplied,
-  addCurrentVariantToCart,
-  openCart,
-  dumpCartState,
-  assertCartPageLoaded,
-  assertRemovalFeedback,
-  removeAnyCartItem
-} = require("./helpers/trendyol_variant_shared");
+const ProductPage = require("../pages/ProductPage");
+const CartPage = require("../pages/CartPage");
+const VariantSelector = require("../pages/VariantSelector");
 
 Feature("Trendyol Ball Color Variant Cart Flow");
 
-Scenario("Add two different colored variants to cart", async ({ I }) => {
+Scenario("Add two different colored variants to cart", async () => {
   const product = dataset[0];
 
   if (!product || !product.url || product.url.trim().length === 0) {
@@ -26,26 +18,26 @@ Scenario("Add two different colored variants to cart", async ({ I }) => {
   const firstColor = product.metadata.expectedColors[0];
   const secondColor = product.metadata.expectedColors[1];
 
-  I.amOnPage(product.url);
-  await dismissBlockingOverlays(I);
+  ProductPage.open(product.url);
+  await ProductPage.dismissBlockingOverlays();
 
-  await selectColorVariant(I, firstColor);
-  await verifyColorSelectionApplied(I, firstColor);
-  await addCurrentVariantToCart(I);
+  await VariantSelector.selectColor(firstColor);
+  await VariantSelector.verifySelected(firstColor);
+  await ProductPage.addToCart();
 
-  I.amOnPage(product.url);
-  await dismissBlockingOverlays(I);
+  ProductPage.open(product.url);
+  await ProductPage.dismissBlockingOverlays();
 
-  await selectColorVariant(I, secondColor);
-  await verifyColorSelectionApplied(I, secondColor);
-  await addCurrentVariantToCart(I);
+  await VariantSelector.selectColor(secondColor);
+  await VariantSelector.verifySelected(secondColor);
+  await ProductPage.addToCart();
 
-  await openCart(I);
-  await dumpCartState(I, 'after_two_variant_adds');
-  await assertCartPageLoaded(I);
+  await CartPage.open();
+  await CartPage.dumpState('after_two_variant_adds');
+  await CartPage.assertLoaded();
 });
 
-Scenario("Remove one cart item and verify removal feedback", async ({ I }) => {
+Scenario("Remove one cart item and verify removal feedback", async () => {
   const product = dataset[0];
 
   if (!product || !product.url || product.url.trim().length === 0) {
@@ -53,14 +45,14 @@ Scenario("Remove one cart item and verify removal feedback", async ({ I }) => {
     return;
   }
 
-  I.amOnPage(product.url);
-  await dismissBlockingOverlays(I);
+  ProductPage.open(product.url);
+  await ProductPage.dismissBlockingOverlays();
 
-  await addCurrentVariantToCart(I);
+  await ProductPage.addToCart();
 
-  await openCart(I);
-  await dumpCartState(I, 'before_remove_flow');
+  await CartPage.open();
+  await CartPage.dumpState('before_remove_flow');
 
-  await removeAnyCartItem(I);
-  await assertRemovalFeedback(I, 'Beyaz');
+  await CartPage.removeAnyItem();
+  await CartPage.assertRemovalFeedback('Beyaz');
 });
