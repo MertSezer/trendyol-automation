@@ -3,3 +3,6 @@
 
 output/*
 !output/.gitkeep
+
+_ci_artifacts/
+products.txt
