@@ -1,0 +1,7 @@
+step: mini_cart_after_add
+product_name: Chuba Erkek Sac Orgu Atki
+product_url: https://www.trendyol.com/chuba/erkek-sac-orgu-atki-gri-23w502-p-369358971?boutiqueId=61&merchantId=108999
+current_url: https://www.trendyol.com/chuba/erkek-sac-orgu-atki-gri-23w502-p-369358971?boutiqueId=61&merchantId=108999
+add_result: {"ok":true,"selector":"[data-testid=\"add-to-cart-button\"]","text":"Sepete Ekle Sepete Eklendi"}
+body_excerpt: İndirim KuponlarımTrendyol'da Satış YapHakkımızda Yardım & Destek Ürün, kategori veya marka ara Giriş Yap Favorilerim 3 Sepetim Kategoriler Yeni Kadın Erkek Anne & Çocuk Ev & Yaşam Süpermarket Kozmetik Ayakkabı & Çanta Elektronik Saat & Aksesuar Spor & Outdoor Flaş Ürünler Yeni Çok Satanlar Yeni Trendyol Erkek Erkek Aksesuar Erkek Şapka & Bere & Eldiven Erkek Atkı CHUBA Erkek Atkı Trendyol Plus'a Özel sepette 284,99 TL Plus'a geç CHUBA Erkek Saç Örgü Atkı Gri 23w502 5.0 6 Değerlendirme 4 Soru-Cevap Kupon Fırsatı! Kazan Trendyol Plus'a Özel Sepette 284,99 TL 299,99 TL Renk: Gri Şimdi Al Sepete Eklendi Tahmini Kargoya Teslim: 2 gün içinde kargoda Tahmini Teslim: Adresini seç ne zaman teslim edileceğini öğren! Konum Seç Bu ürünü ödeme sonrasında hediye paketi yaptırabilirsin. Ödeme Seçenekleri: 12 Aya Varan Taksit Fırsatı Aylık 32.29 TL'den başlayan 12 aya varan taksit fırsatı Kuponlar 100 TL Kazan Alt Limit 1.000 TL Son Tarih: 13.04.2026 Kuponun Ürünleri 150 TL Kazan Alt Limit 1.500 TL S
+time: 2026-03-23T14:25:24.733Z

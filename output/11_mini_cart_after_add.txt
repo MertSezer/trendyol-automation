@@ -1,0 +1,7 @@
+step: mini_cart_after_add
+product_name: Uniprom Diz Koruma Pedi
+product_url: https://www.trendyol.com/uniprom/is-pantolonu-diz-koruma-pedi-16x21-cm-bs-en-14404-2004-a1-2010-level-0-type-2-p-1092692626?boutiqueId=61&merchantId=634071
+current_url: https://www.trendyol.com/uniprom/is-pantolonu-diz-koruma-pedi-16x21-cm-bs-en-14404-2004-a1-2010-level-0-type-2-p-1092692626?boutiqueId=61&merchantId=634071
+add_result: {"ok":true,"selector":"[data-testid=\"add-to-cart-button\"]","text":"Sepete Ekle Sepete Eklendi"}
+body_excerpt: İndirim KuponlarımTrendyol'da Satış YapHakkımızda Yardım & Destek Ürün, kategori veya marka ara Giriş Yap Favorilerim 3 Sepetim Kategoriler Yeni Kadın Erkek Anne & Çocuk Ev & Yaşam Süpermarket Kozmetik Ayakkabı & Çanta Elektronik Saat & Aksesuar Spor & Outdoor Flaş Ürünler Yeni Çok Satanlar Yeni Trendyol Uniprom Giyim İş Kıyafeti Uniprom İş Kıyafeti Uniprom İş Pantolonu Diz Koruma Pedi 16x21 cm BS EN 14404:2004 +A1:2010 Level:0 Type 2 4.0 1 Değerlendirme 5 Soru-Cevap Beden: STANDART Standart Şimdi Al 20 saat 34 dakika içinde sipariş verirsen en geç yarın kargoda! Tahmini Teslim: Adresini seç ne zaman teslim edileceğini öğren! Konum Seç Ödeme Seçenekleri: 12 Aya Varan Taksit Fırsatı Aylık 43.37 TL'den başlayan 12 aya varan taksit fırsatı Öne Çıkan Özellikler: Kampanya fiyatından satılmak üzere 100 adetten fazla stok sunulmuştur. İncelemiş olduğunuz ürünün satış fiyatını satıcı belirlemektedir. Bir ürün, birden fazla satıcı tarafından satılabilir. Birden fazla satıcı tarafından satışa su
+time: 2026-03-23T14:25:41.254Z

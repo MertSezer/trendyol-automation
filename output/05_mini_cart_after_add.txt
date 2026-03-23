@@ -1,0 +1,7 @@
+step: mini_cart_after_add
+product_name: Sebir Moda Kareli Triko Atki
+product_url: https://www.trendyol.com/sebir-moda/kareli-triko-atki-p-1032872467?boutiqueId=61&merchantId=1014897
+current_url: https://www.trendyol.com/sebir-moda/kareli-triko-atki-p-1032872467?boutiqueId=61&merchantId=1014897
+add_result: {"ok":true,"selector":"[data-testid=\"add-to-cart-button\"]","text":"Sepete Ekle Sepete Eklendi"}
+body_excerpt: İndirim KuponlarımTrendyol'da Satış YapHakkımızda Yardım & Destek Ürün, kategori veya marka ara Giriş Yap Favorilerim 1 Sepetim Kategoriler Yeni Kadın Erkek Anne & Çocuk Ev & Yaşam Süpermarket Kozmetik Ayakkabı & Çanta Elektronik Saat & Aksesuar Spor & Outdoor Flaş Ürünler Yeni Çok Satanlar Yeni Trendyol Kadın Kadın Aksesuar Kadın Şapka & Bere & Eldiven Kadın Atkı Sebir Moda Kareli Triko Atkı 4.8 60 Değerlendirme 10 Soru-Cevap 389 TL Renk: Siyah-Antrasit Beden: 40X180 40x180 Şimdi Al Tahmini Kargoya Teslim: 2 gün içinde kargoda Tahmini Teslim: Adresini seç ne zaman teslim edileceğini öğren! Konum Seç Ödeme Seçenekleri: 12 Aya Varan Taksit Fırsatı Aylık 41.87 TL'den başlayan 12 aya varan taksit fırsatı Öne Çıkan Özellikler: Kampanya fiyatından satılmak üzere 10 adetten fazla stok sunulmuştur. Bir ürün, birden fazla satıcı tarafından satılabilir. Birden fazla satıcı tarafından satışa sunulan ürünlerin satıcıları ürün için belirledikleri fiyata, satıcı puanlarına, teslimat statülerine, ür
+time: 2026-03-23T14:25:07.077Z

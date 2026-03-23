@@ -1,0 +1,947 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+***************************************
+nodeInfo:  20.20.1
+osInfo:  Linux 6.17 Ubuntu 24.04.3 LTS 24.04.3 LTS (Noble Numbat)
+cpuInfo:  (4) x64 AMD Ryzen 3 3200U with Radeon Vega Mobile Gfx
+chromeInfo:  Not Found
+edgeInfo:  "N/A"
+firefoxInfo:  undefined
+safariInfo:  N/A
+playwrightBrowsers:  ""
+If you need more detailed info, just run this: npx codeceptjs info
+***************************************
+CodeceptJS v3.7.6 #StandWithUkraine
+Using test root "/home/iotiq/trendyol-automation"
+Helpers: CaseReport, ReportHelper, WebDriver
+Plugins: screenshotOnFail, retryFailedStep
+
+Trendyol - Multi URL Enterprise Demo (POM) --
+/home/iotiq/trendyol-automation/tests/e2e/multi_url_add_remove_test.js
+    [1]  Starting recording promises
+    Timeouts: 
+  Products list -> open -> add-to-cart -> cart -> remove -> summary (POM)
+    [1]  Error (Non-Terminated) | Error: No connection to WebDriver Bidi was established | e => error(e)...
+Error: No connection to WebDriver Bidi was established
+  Scenario()
+    I say "DATASET=datasets/batch_01.txt"
+   DATASET=datasets/batch_01.txt
+    I say "URL count=10"
+   URL count=10
+    I say "OPEN [1/10] https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968"
+   OPEN [1/10] https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968
+    I am on page "https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968
+    I grab title 
+    › [Title] Dark Seer Beyaz Unisex Sneaker - Fiyatı, Yorumları
+    I say "CURRENT=https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968"
+   CURRENT=https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792?boutiqueId=684007&merchantId=968
+    I say "TITLE=Dark Seer Beyaz Unisex Sneaker - Fiyatı, Yorumları"
+   TITLE=Dark Seer Beyaz Unisex Sneaker - Fiyatı, Yorumları
+    I save screenshot "pdp_1.png"
+    › Screenshot has been saved to /home/iotiq/trendyol-automation/output/pdp_1.png
+    › Screenshot has been saved to /home/iotiq/trendyol-automation/output/pdp_1.png, size: 1375x9425
+    I execute script ({ hints, selectors, minWidth, minHeight, scrollIntoView }) => {
+      const norm = (s) =>
+        (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const visible = (el) => {
+        const r = el.getBoundingClientRect();
+        return r.width >= minWidth && r.height >= minHeight;
+      };
+
+      const ownText = (el) => {
+        const aria = el.getAttribute("aria-label") || "";
+        const title = el.getAttribute("title") || "";
+        const value = el.getAttribute("value") || "";
+
+        const directText = Array.from(el.childNodes)
+          .filter((n) => n.nodeType === Node.TEXT_NODE)
+          .map((n) => n.textContent || "")
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        const txt = aria || title || value || directText || "";
+        return txt.replace(/\s+/g, " ").trim();
+      };
+
+      const normalizedHints = hints.map(norm);
+      const nodes = Array.from(document.querySelectorAll(selectors));
+      const candidates = [];
+
+      for (const el of nodes) {
+        if (!visible(el)) continue;
+
+        const raw = ownText(el);
+        if (!raw) continue;
+
+        const txt = norm(raw);
+
+        const matched = normalizedHints.find(
+          (h) => txt === h || txt.startsWith(h) || txt.includes(h)
+        );
+
+        if (!matched) continue;
+        if (txt.length > 60) continue;
+
+        let score = 0;
+
+        if (txt === matched) score += 1000;
+        else if (txt.startsWith(matched)) score += 700;
+        else score += 400;
+
+        if (el.tagName === "BUTTON") score += 200;
+        if (el.getAttribute("role") === "button") score += 120;
+
+        score -= txt.length;
+
+        candidates.push({
+          el,
+          raw,
+          score,
+        });
+      }
+
+      candidates.sort((a, b) => b.score - a.score);
+
+      const best = candidates[0];
+      if (!best) return null;
+
+      try {
+        if (scrollIntoView) {
+          best.el.scrollIntoView({ block: "center" });
+        }
+
+        best.el.click();
+        return best.raw;
+      } catch (_) {
+        return null;
+      }
+    }, {"hints":["sepete ekle","add to cart","add to basket"],"selectors":"button,a,div,span","minWidth":10,"minHeight":10,"scrollIntoView":true}
+    I wait 2
+    I execute script () => {
+    const text = (document.body?.innerText || "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return {
+      url: location.href,
+      hasAddedText:
+        text.includes("sepete eklendi") ||
+        text.includes("ürün sepetinde") ||
+        text.includes("urun sepetinde") ||
+        text.includes("sepetinizde"),
+      hasBasketCount:
+        !!document.querySelector('[data-testid*="basket"]') ||
+        !!document.querySelector(".basket-preview") ||
+        !!document.querySelector(".shopping-basket") ||
+        !!document.querySelector(".basketItemCount") ||
+        !!document.querySelector(".item-count"),
+    };
+  }
+    I say "[add-to-cart] clicked: Sepete Eklendi"
+   [add-to-cart] clicked: Sepete Eklendi
+    I execute script ({ hints, selectors, minWidth, minHeight, scrollIntoView }) => {
+      const norm = (s) =>
+        (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const visible = (el) => {
+        const r = el.getBoundingClientRect();
+        return r.width >= minWidth && r.height >= minHeight;
+      };
+
+      const ownText = (el) => {
+        const aria = el.getAttribute("aria-label") || "";
+        const title = el.getAttribute("title") || "";
+        const value = el.getAttribute("value") || "";
+
+        const directText = Array.from(el.childNodes)
+          .filter((n) => n.nodeType === Node.TEXT_NODE)
+          .map((n) => n.textContent || "")
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        const txt = aria || title || value || directText || "";
+        return txt.replace(/\s+/g, " ").trim();
+      };
+
+      const normalizedHints = hints.map(norm);
+      const nodes = Array.from(document.querySelectorAll(selectors));
+      const candidates = [];
+
+      for (const el of nodes) {
+        if (!visible(el)) continue;
+
+        const raw = ownText(el);
+        if (!raw) continue;
+
+        const txt = norm(raw);
+
+        const matched = normalizedHints.find(
+          (h) => txt === h || txt.startsWith(h) || txt.includes(h)
+        );
+
+        if (!matched) continue;
+        if (txt.length > 60) continue;
+
+        let score = 0;
+
+        if (txt === matched) score += 1000;
+        else if (txt.startsWith(matched)) score += 700;
+        else score += 400;
+
+        if (el.tagName === "BUTTON") score += 200;
+        if (el.getAttribute("role") === "button") score += 120;
+
+        score -= txt.length;
+
+        candidates.push({
+          el,
+          raw,
+          score,
+        });
+      }
+
+      candidates.sort((a, b) => b.score - a.score);
+
+      const best = candidates[0];
+      if (!best) return null;
+
+      try {
+        if (scrollIntoView) {
+          best.el.scrollIntoView({ block: "center" });
+        }
+
+        best.el.click();
+        return best.raw;
+      } catch (_) {
+        return null;
+      }
+    }, {"hints":["sepetim","sepete git","sepet","go to cart"],"selectors":"button,a,div,span","minWidth":8,"minHeight":8,"scrollIntoView":true}
+    I wait 2
+    I grab current url 
+    › [Url] https://www.trendyol.com/sepetim
+    I save screenshot "cart_1.png"
+    › Screenshot has been saved to /home/iotiq/trendyol-automation/output/cart_1.png
+    › Screenshot has been saved to /home/iotiq/trendyol-automation/output/cart_1.png, size: 1343x1490
+    I execute script ({ hints, selectors, minWidth, minHeight, scrollIntoView }) => {
+      const norm = (s) =>
+        (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const visible = (el) => {
+        const r = el.getBoundingClientRect();
+        return r.width >= minWidth && r.height >= minHeight;
+      };
+
+      const ownText = (el) => {
+        const aria = el.getAttribute("aria-label") || "";
+        const title = el.getAttribute("title") || "";
+        const value = el.getAttribute("value") || "";
+
+        const directText = Array.from(el.childNodes)
+          .filter((n) => n.nodeType === Node.TEXT_NODE)
+          .map((n) => n.textContent || "")
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        const txt = aria || title || value || directText || "";
+        return txt.replace(/\s+/g, " ").trim();
+      };
+
+      const normalizedHints = hints.map(norm);
+      const nodes = Array.from(document.querySelectorAll(selectors));
+      const candidates = [];
+
+      for (const el of nodes) {
+        if (!visible(el)) continue;
+
+        const raw = ownText(el);
+        if (!raw) continue;
+
+        const txt = norm(raw);
+
+        const matched = normalizedHints.find(
+          (h) => txt === h || txt.startsWith(h) || txt.includes(h)
+        );
+
+        if (!matched) continue;
+        if (txt.length > 60) continue;
+
+        let score = 0;
+
+        if (txt === matched) score += 1000;
+        else if (txt.startsWith(matched)) score += 700;
+        else score += 400;
+
+        if (el.tagName === "BUTTON") score += 200;
+        if (el.getAttribute("role") === "button") score += 120;
+
+        score -= txt.length;
+
+        candidates.push({
+          el,
+          raw,
+          score,
+        });
+      }
+
+      candidates.sort((a, b) => b.score - a.score);
+
+      const best = candidates[0];
+      if (!best) return null;
+
+      try {
+        if (scrollIntoView) {
+          best.el.scrollIntoView({ block: "center" });
+        }
+
+        best.el.click();
+        return best.raw;
+      } catch (_) {
+        return null;
+      }
+    }, {"hints":["sil","kaldır","çıkar","remove","delete"],"selectors":"button,a,div,span","minWidth":8,"minHeight":8,"scrollIntoView":true}
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const text = norm(document.body?.innerText || "");
+
+    const emptyHints = [
+      "sepetin bos",
+      "sepetiniz bos",
+      "sepetinde urun bulunmamaktadir",
+      "sepetinizde urun bulunmamaktadir",
+      "sepette urun yok",
+      "alisverise basla",
+    ];
+
+    const itemSelectors = [
+      '[data-testid*="cart-item"]',
+      '[data-testid*="basket-item"]',
+      ".pb-basket-item",
+      ".basket-item",
+      '[class*="basket-item"]',
+      '[class*="cart-item"]',
+    ];
+
+    let visibleItemCount = 0;
+
+    for (const sel of itemSelectors) {
+      const nodes = Array.from(document.querySelectorAll(sel));
+      for (const el of nodes) {
+        const r = el.getBoundingClientRect();
+        if (r.width > 5 && r.height > 5) {
+          visibleItemCount += 1;
+        }
+      }
+    }
+
+    return {
+      url: location.href,
+      emptyLike: emptyHints.some((h) => text.includes(h)),
+      visibleItemCount,
+      stillOnCartPage: location.href.includes("sepet"),
+    };
+  }
+    I save screenshot "after_remove_1.png"
+    › Screenshot has been saved to /home/iotiq/trendyol-automation/output/after_remove_1.png
+    › Screenshot has been saved to /home/iotiq/trendyol-automation/output/after_remove_1.png, size: 1343x3657
+    I say "OPEN [2/10] https://www.trendyol.com/dark-seer/beyaz-buz-unisex-sneaker-p-130327366?boutiqueId=681430&merchantId=968"
+   OPEN [2/10] https://www.trendyol.com/dark-seer/beyaz-buz-unisex-sneaker-p-130327366?boutiqueId=681430&merchantId=968
+    I am on page "https://www.trendyol.com/dark-seer/beyaz-buz-unisex-sneaker-p-130327366?boutiqueId=681430&merchantId=968"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [3/10] https://www.trendyol.com/puma/shuffle-ayakkabi-p-815873991?boutiqueId=61&merchantId=62"
+   OPEN [3/10] https://www.trendyol.com/puma/shuffle-ayakkabi-p-815873991?boutiqueId=61&merchantId=62
+    I am on page "https://www.trendyol.com/puma/shuffle-ayakkabi-p-815873991?boutiqueId=61&merchantId=62"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [4/10] https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906479399?boutiqueId=61&merchantId=333333"
+   OPEN [4/10] https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906479399?boutiqueId=61&merchantId=333333
+    I am on page "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906479399?boutiqueId=61&merchantId=333333"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [5/10] https://www.trendyol.com/dark-seer/beyaz-fume-erkek-sneaker-p-100991468?boutiqueId=681430&merchantId=968"
+   OPEN [5/10] https://www.trendyol.com/dark-seer/beyaz-fume-erkek-sneaker-p-100991468?boutiqueId=681430&merchantId=968
+    I am on page "https://www.trendyol.com/dark-seer/beyaz-fume-erkek-sneaker-p-100991468?boutiqueId=681430&merchantId=968"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [6/10] https://www.trendyol.com/efnanshoes/efnan-shoes-erkek-gunluk-ortopedik-taban-rahat-esnek-lastikli-garantili-ayakkabi-p-1104426884?boutiqueId=61&merchantId=987187"
+   OPEN [6/10] https://www.trendyol.com/efnanshoes/efnan-shoes-erkek-gunluk-ortopedik-taban-rahat-esnek-lastikli-garantili-ayakkabi-p-1104426884?boutiqueId=61&merchantId=987187
+    I am on page "https://www.trendyol.com/efnanshoes/efnan-shoes-erkek-gunluk-ortopedik-taban-rahat-esnek-lastikli-garantili-ayakkabi-p-1104426884?boutiqueId=61&merchantId=987187"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [7/10] https://www.trendyol.com/tonny-black/unisex-beyaz-siyah-termo-taban-yani-seritli-bagcikli-spor-ayakkabi-p-879885114?boutiqueId=61&merchantId=106292"
+   OPEN [7/10] https://www.trendyol.com/tonny-black/unisex-beyaz-siyah-termo-taban-yani-seritli-bagcikli-spor-ayakkabi-p-879885114?boutiqueId=61&merchantId=106292
+    I am on page "https://www.trendyol.com/tonny-black/unisex-beyaz-siyah-termo-taban-yani-seritli-bagcikli-spor-ayakkabi-p-879885114?boutiqueId=61&merchantId=106292"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [8/10] https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906478247?boutiqueId=61&merchantId=333333"
+   OPEN [8/10] https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906478247?boutiqueId=61&merchantId=333333
+    I am on page "https://www.trendyol.com/big-king/jean-erkek-ultra-hafif-erkek-spor-ayakkabi-p-906478247?boutiqueId=61&merchantId=333333"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [9/10] https://www.trendyol.com/genel-markalar/unisex-spor-ayakkabi-gunluk-sneakers-p-46563277?boutiqueId=61&merchantId=1124946"
+   OPEN [9/10] https://www.trendyol.com/genel-markalar/unisex-spor-ayakkabi-gunluk-sneakers-p-46563277?boutiqueId=61&merchantId=1124946
+    I am on page "https://www.trendyol.com/genel-markalar/unisex-spor-ayakkabi-gunluk-sneakers-p-46563277?boutiqueId=61&merchantId=1124946"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "OPEN [10/10] https://www.trendyol.com/e-sport/gunluk-siyah-beyaz-erkek-sneaker-ayakkabi-p-973314608?boutiqueId=61&merchantId=979689"
+   OPEN [10/10] https://www.trendyol.com/e-sport/gunluk-siyah-beyaz-erkek-sneaker-ayakkabi-p-973314608?boutiqueId=61&merchantId=979689
+    I am on page "https://www.trendyol.com/e-sport/gunluk-siyah-beyaz-erkek-sneaker-ayakkabi-p-973314608?boutiqueId=61&merchantId=979689"
+    I wait 2
+    I execute script () => {
+    const norm = (s) =>
+      (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const nodes = Array.from(
+      document.querySelectorAll("button,a,div[role='button'],span[role='button']")
+    );
+
+    const hints = [
+      "kabul et",
+      "tumunu kabul et",
+      "tümünü kabul et",
+      "accept",
+      "agree",
+      "tamam",
+      "ok",
+      "kapat",
+      "anladim",
+      "anladım",
+    ].map(norm);
+
+    let clicked = 0;
+
+    for (const el of nodes) {
+      const txt = norm(el.innerText || el.textContent || "");
+      if (!txt) continue;
+      if (!hints.some((h) => txt.includes(h))) continue;
+
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+
+      try {
+        el.click();
+        clicked += 1;
+      } catch (_) {}
+    }
+
+    return clicked;
+  }
+    I grab current url 
+    › [Url] https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I grab title 
+    › [Title] Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   CURRENT=https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026"
+   TITLE=Monster Laptop Fiyatları | Monster Notebook Modelleri 2026
+    I say "SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108"
+   SKIP: not product page -> https://www.trendyol.com/monster-laptop-x-b105536-c103108
+    I say "WROTE=/home/iotiq/trendyol-automation/output/case_report.multi.json"
+   WROTE=/home/iotiq/trendyol-automation/output/case_report.multi.json
+  ✔ OK in 67166ms
+
+
+  OK  | 1 passed   // 1m
