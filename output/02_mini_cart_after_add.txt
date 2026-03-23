@@ -1,7 +1,0 @@
-step: mini_cart_after_add
-product_name: Hadron PS3 Kablo
-product_url: https://www.trendyol.com/hadron/sony-ps3-kol-joystick-usb-sarj-kablosu-1-5-mt-metre-playstation-p-158375322
-current_url: https://www.trendyol.com/hadron/sony-ps3-kol-joystick-usb-sarj-kablosu-1-5-mt-metre-playstation-p-158375322
-add_result: {"ok":true,"selector":"[data-testid=\"add-to-cart-button\"]","text":"Sepete Ekle Sepete Eklendi"}
-body_excerpt: İndirim KuponlarımTrendyol'da Satış YapHakkımızda Yardım & Destek Ürün, kategori veya marka ara Giriş Yap Favorilerim 1 Sepetim Kategoriler Yeni Kadın Erkek Anne & Çocuk Ev & Yaşam Süpermarket Kozmetik Ayakkabı & Çanta Elektronik Saat & Aksesuar Spor & Outdoor Flaş Ürünler Yeni Çok Satanlar Yeni Trendyol HADRON Elektronik Telefon Telefon Aksesuarları Şarj Cihazları Şarj Aleti HADRON Şarj Aleti HIZLI TESLİMAT HADRON Sony Ps3 Kol Joystick Usb Sarj Kablosu 1,5 Mt Metre Playstation 4.6 47 Değerlendirme 32 Soru-Cevap Sevilen ürün! 362 kişi favoriledi! 113 TL Renk: SİYAH SİYAH Şimdi Al Sepete Eklendi 9 saat 35 dakika içinde sipariş verirsen en geç yarın kargoda! Tahmini Teslim: Adresini seç ne zaman teslim edileceğini öğren! Konum Seç Konum Seç kısmından il ve ilçe bilgilerini girerek ürünün kapına teslim tarihini öğrenebilirsin. Anladım Ödeme Seçenekleri: 9 Aya Varan Taksit Fırsatı Aylık 15.37 TL'den başlayan 9 aya varan taksit fırsatı Öne Çıkan Özellikler: Bu ürün KRAL BİLİŞİM tarafından g
-time: 2026-03-23T14:24:52.120Z
