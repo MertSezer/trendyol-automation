@@ -6,3 +6,33 @@ output/
 products.txt
 
 src/config/
+output/
+
+# local demo / evidence junk
+products.json
+run_logs/
+evidence/
+webdriver/
+tools/
+Checking
+Installing
+Snap
+no
+
+# local archives
+*.zip
+
+# test backups / corruption snapshots
+*.bak
+*.backup.*
+*.corrupted.*
+*.before_*
+
+# local dataset scratch files
+datasets/*.save
+datasets/all_urls_*.txt
+datasets/batch_*.txt
+datasets/one_url.txt
+datasets/pdp_*.txt
+datasets/three_variants_candidate.txt
+datasets/verified_pdp_urls.txt
