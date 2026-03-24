@@ -39,14 +39,15 @@ function loadProducts() {
 
     return {
       name: String(p.name || `Product ${i + 1}`),
-      url: String(p.url)
+      url: String(p.url),
     };
   });
 }
 
-Scenario("Add products one by one, keep only last 3 in cart, capture evidence on every page", async ({ I }) => {
-  const products = loadProducts().slice(0, 5);
-  const cartLimit = 3;
+Scenario("Add products one by one, keep only last 4 in cart, capture evidence on every page", async ({ I }) => {
+  const products = loadProducts();
+  const cartLimit = 4;
+  const perProductLimit = 2;
   let stepNo = 1;
   const fifoQueue = [];
   const evidence = new EvidenceManager({
@@ -56,6 +57,15 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
 
   function nextShot(label) {
     return `${pad(stepNo++)}_${label}.png`;
+  }
+
+  function normalizeNameForMatch(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   async function removeBlockingUi() {
@@ -68,7 +78,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
       '[class*="tooltip"]',
       '[class*="popover"]',
       '[class*="modal"]',
-      '[class*="dropdown"]'
+      '[class*="dropdown"]',
     ];
 
     for (const sel of selectors) {
@@ -84,7 +94,13 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         if (!el || !el.getBoundingClientRect) return false;
         const r = el.getBoundingClientRect();
         const st = window.getComputedStyle(el);
-        return r.width > 0 && r.height > 0 && st.display !== "none" && st.visibility !== "hidden" && st.opacity !== "0";
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          st.display !== "none" &&
+          st.visibility !== "hidden" &&
+          st.opacity !== "0"
+        );
       };
 
       const nodes = Array.from(document.querySelectorAll("button, a, div, span"));
@@ -125,18 +141,24 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         if (!el || !el.getBoundingClientRect) return false;
         const r = el.getBoundingClientRect();
         const st = window.getComputedStyle(el);
-        return r.width > 0 && r.height > 0 && st.display !== "none" && st.visibility !== "hidden" && st.opacity !== "0";
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          st.display !== "none" &&
+          st.visibility !== "hidden" &&
+          st.opacity !== "0"
+        );
       };
 
       const selectors = [
         '[data-testid="add-to-cart-button"]',
-        'button.add-to-basket',
+        "button.add-to-basket",
         'button[class*="add-to-basket"]',
         'button[class*="addToBasket"]',
         "button",
         "a",
         "div",
-        "span"
+        "span",
       ];
 
       for (const sel of selectors) {
@@ -175,7 +197,13 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         if (!el || !el.getBoundingClientRect) return false;
         const r = el.getBoundingClientRect();
         const st = window.getComputedStyle(el);
-        return r.width > 0 && r.height > 0 && st.display !== "none" && st.visibility !== "hidden" && st.opacity !== "0";
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          st.display !== "none" &&
+          st.visibility !== "hidden" &&
+          st.opacity !== "0"
+        );
       };
 
       const bodyText = normalize(document.body ? document.body.innerText : "");
@@ -185,7 +213,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         /Sepetim\s*\((\d+)\s*Ürün\)/i,
         /Sepetim\s*\((\d+)\s*Urun\)/i,
         /(\d+)\s*Ürün/i,
-        /(\d+)\s*Urun/i
+        /(\d+)\s*Urun/i,
       ]) {
         const m = bodyText.match(re);
         if (m) {
@@ -262,9 +290,24 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         cartCount,
         items,
         titles,
-        bodyExcerpt: bodyText.slice(0, 1800)
+        bodyExcerpt: bodyText.slice(0, 1800),
       };
     });
+  }
+
+  async function getProductCountInCart(targetName) {
+    const cart = await getCartSnapshot();
+    const target = normalizeNameForMatch(targetName);
+
+    let count = 0;
+    for (const title of cart.titles || []) {
+      const candidate = normalizeNameForMatch(title);
+      if (candidate.includes(target) || target.includes(candidate)) {
+        count += 1;
+      }
+    }
+
+    return { count, cart };
   }
 
   async function removeProductByName(wantedName) {
@@ -283,7 +326,13 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         if (!el || !el.getBoundingClientRect) return false;
         const r = el.getBoundingClientRect();
         const st = window.getComputedStyle(el);
-        return r.width > 0 && r.height > 0 && st.display !== "none" && st.visibility !== "hidden" && st.opacity !== "0";
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          st.display !== "none" &&
+          st.visibility !== "hidden" &&
+          st.opacity !== "0"
+        );
       };
 
       const scoreMatch = (candidate, target) => {
@@ -362,7 +411,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
             depth,
             silCount,
             saticiCount,
-            teslimCount
+            teslimCount,
           });
         }
       }
@@ -376,7 +425,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
           mode: "not-found",
           targetText,
           bestScore: best ? best.score : 0,
-          checkedButtons: candidates.length
+          checkedButtons: candidates.length,
         };
       }
 
@@ -400,7 +449,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         depth: best.depth,
         silCount: best.silCount,
         saticiCount: best.saticiCount,
-        teslimCount: best.teslimCount
+        teslimCount: best.teslimCount,
       };
     }, wantedName);
 
@@ -420,14 +469,44 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
       stepName: "product_page",
       meta: {
         productName: product.name,
-        productUrl: product.url
-      }
+        productUrl: product.url,
+      },
     });
 
     const productUrl = await I.grabCurrentUrl();
     await I.saveScreenshot(nextShot("product_page"));
 
-    const addResult = await clickAddToCart();
+    const existingCountBeforeAttempt = fifoQueue.filter(
+      (name) => normalizeNameForMatch(name) === normalizeNameForMatch(product.name)
+    ).length;
+
+    await openProduct(product.url);
+
+    let addResult;
+    let addStatus = "added";
+    let limitBadge = "green";
+
+    if (existingCountBeforeAttempt >= perProductLimit) {
+      addStatus = "blocked_by_product_limit";
+      limitBadge = "amber";
+      addResult = {
+        ok: false,
+        mode: "blocked_by_product_limit",
+        productName: product.name,
+        existingCountBeforeAttempt,
+        perProductLimit,
+      };
+      await I.say(
+        `PRODUCT LIMIT BLOCKED: ${product.name} (${existingCountBeforeAttempt}/${perProductLimit})`
+      );
+    } else {
+      addResult = await clickAddToCart();
+      if (!addResult || !addResult.ok) {
+        addStatus = "failed";
+        limitBadge = "red";
+      }
+    }
+
     await I.wait(2);
 
     const currentUrlAfterAdd = await I.grabCurrentUrl();
@@ -439,12 +518,18 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
       `product_name: ${product.name}`,
       `product_url: ${product.url}`,
       `current_url: ${currentUrlAfterAdd}`,
+      `add_status: ${addStatus}`,
+      `limit_badge: ${limitBadge}`,
+      `existing_count_before_attempt: ${existingCountBeforeAttempt}`,
+      `product_limit: ${perProductLimit}`,
       `add_result: ${JSON.stringify(addResult)}`,
       `body_excerpt: ${String(productBody || "").replace(/\s+/g, " ").slice(0, 1000)}`,
-      `time: ${new Date().toISOString()}`
+      `time: ${new Date().toISOString()}`,
     ]);
 
-    fifoQueue.push(product.name);
+    if (addStatus === "added") {
+      fifoQueue.push(product.name);
+    }
 
     const cartAfterAdd = await getCartSnapshot();
     const cartUrlAfterAdd = await I.grabCurrentUrl();
@@ -454,12 +539,16 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
       "step: basket_after_add",
       `product_name: ${product.name}`,
       `cart_url: ${cartUrlAfterAdd}`,
+      `add_status: ${addStatus}`,
+      `limit_badge: ${limitBadge}`,
+      `existing_count_before_attempt: ${existingCountBeforeAttempt}`,
+      `product_limit: ${perProductLimit}`,
       `fifo_queue_now: ${JSON.stringify(fifoQueue)}`,
       `cart_count_after_add: ${cartAfterAdd.cartCount}`,
       `cart_titles_after_add: ${JSON.stringify(cartAfterAdd.titles)}`,
       `cart_items_after_add: ${JSON.stringify(cartAfterAdd.items)}`,
       `body_excerpt: ${cartAfterAdd.bodyExcerpt}`,
-      `time: ${new Date().toISOString()}`
+      `time: ${new Date().toISOString()}`,
     ]);
 
     await captureCartEvidence({
@@ -473,8 +562,12 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         cartUrl: cartUrlAfterAdd,
         action: "after_add",
         addResult,
-        fifoQueue: [...fifoQueue]
-      }
+        addStatus,
+        limitBadge,
+        existingCountBeforeAttempt,
+        perProductLimit,
+        fifoQueue: [...fifoQueue],
+      },
     });
 
     if (fifoQueue.length > cartLimit) {
@@ -491,8 +584,8 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
           currentProduct: product.name,
           oldestExpected: oldest,
           action: "before_remove_oldest",
-          fifoQueueBeforeRemove: [oldest, ...fifoQueue]
-        }
+          fifoQueueBeforeRemove: [oldest, ...fifoQueue],
+        },
       });
 
       const removeResult = await removeProductByName(oldest);
@@ -513,7 +606,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         `cart_items_after_remove: ${JSON.stringify(cartAfterRemove.items)}`,
         `cart_url: ${cartUrlAfterRemove}`,
         `body_excerpt: ${cartAfterRemove.bodyExcerpt}`,
-        `time: ${new Date().toISOString()}`
+        `time: ${new Date().toISOString()}`,
       ]);
 
       await captureCartEvidence({
@@ -528,8 +621,8 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
           cartLimit,
           removeResult,
           fifoQueueAfterRemove: [...fifoQueue],
-          cartUrl: cartUrlAfterRemove
-        }
+          cartUrl: cartUrlAfterRemove,
+        },
       });
     }
   }
@@ -540,6 +633,7 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
     processedProducts: products.map((p) => p.name),
     totalProductsProcessed: products.length,
     finalCartLimit: cartLimit,
-    finishedAt: new Date().toISOString()
+    perProductLimit,
+    finishedAt: new Date().toISOString(),
   });
 });
