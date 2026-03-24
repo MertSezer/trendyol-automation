@@ -1,5 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const {
+  EvidenceManager,
+  captureEvidenceStep,
+  captureCartEvidence,
+} = require("../helpers/evidence");
 
 Feature("Trendyol - Multi Product FIFO Evidence Scenario");
 
@@ -44,6 +49,10 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
   const cartLimit = 3;
   let stepNo = 1;
   const fifoQueue = [];
+  const evidence = new EvidenceManager({
+    baseDir: path.join(process.cwd(), "output", "demo-runs"),
+    runLabel: "multi_product_fifo",
+  });
 
   function nextShot(label) {
     return `${pad(stepNo++)}_${label}.png`;
@@ -405,6 +414,16 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
     await I.say(`PROCESS PRODUCT: ${product.name}`);
     await openProduct(product.url);
 
+    await captureEvidenceStep({
+      I,
+      manager: evidence,
+      stepName: "product_page",
+      meta: {
+        productName: product.name,
+        productUrl: product.url
+      }
+    });
+
     const productUrl = await I.grabCurrentUrl();
     await I.saveScreenshot(nextShot("product_page"));
 
@@ -443,10 +462,39 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
       `time: ${new Date().toISOString()}`
     ]);
 
+    await captureCartEvidence({
+      I,
+      manager: evidence,
+      stepName: "cart_after_add",
+      cartSnapshot: cartAfterAdd,
+      extra: {
+        productName: product.name,
+        productUrl,
+        cartUrl: cartUrlAfterAdd,
+        action: "after_add",
+        addResult,
+        fifoQueue: [...fifoQueue]
+      }
+    });
+
     if (fifoQueue.length > cartLimit) {
       const oldest = fifoQueue.shift();
 
       await I.say(`REMOVE OLDEST PRODUCT: ${oldest}`);
+
+      await captureCartEvidence({
+        I,
+        manager: evidence,
+        stepName: "before_remove_oldest",
+        cartSnapshot: cartAfterAdd,
+        extra: {
+          currentProduct: product.name,
+          oldestExpected: oldest,
+          action: "before_remove_oldest",
+          fifoQueueBeforeRemove: [oldest, ...fifoQueue]
+        }
+      });
+
       const removeResult = await removeProductByName(oldest);
 
       const cartAfterRemove = await getCartSnapshot();
@@ -467,6 +515,31 @@ Scenario("Add products one by one, keep only last 3 in cart, capture evidence on
         `body_excerpt: ${cartAfterRemove.bodyExcerpt}`,
         `time: ${new Date().toISOString()}`
       ]);
+
+      await captureCartEvidence({
+        I,
+        manager: evidence,
+        stepName: "after_remove_oldest",
+        cartSnapshot: cartAfterRemove,
+        extra: {
+          currentProduct: product.name,
+          removedExpected: oldest,
+          action: "after_remove_oldest",
+          cartLimit,
+          removeResult,
+          fifoQueueAfterRemove: [...fifoQueue],
+          cartUrl: cartUrlAfterRemove
+        }
+      });
     }
   }
+
+  evidence.finalize({
+    status: "success",
+    finalQueue: [...fifoQueue],
+    processedProducts: products.map((p) => p.name),
+    totalProductsProcessed: products.length,
+    finalCartLimit: cartLimit,
+    finishedAt: new Date().toISOString()
+  });
 });
