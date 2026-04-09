@@ -1,5 +1,5 @@
-# Keep PowerShell scripts consistent
-*.ps1 text eol=lf
-
-# (Optional) Keep JS as LF too
+﻿* text=auto
 *.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.ps1 text eol=crlf
