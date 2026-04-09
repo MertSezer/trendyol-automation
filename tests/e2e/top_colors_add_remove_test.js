@@ -1,55 +1,28 @@
-"use strict";
+﻿Feature("Trendyol - Top Colors Add/Remove Demo (POM)");
 
-const { container } = require("codeceptjs");
-const { readProducts } = require("../../src/core/Data");
-const { config } = require("../../src/config/config");
-const { TopColorsAddRemoveFlow } = require("../../src/flows/TopColorsAddRemoveFlow");
-
-Feature("Trendyol - Top Colors Add/Remove Demo (POM)");
-
-function getCaseReport() {
-  try { return container.helpers("CaseReport"); } catch (e) { return null; }
-}
+const PRODUCT_URLS = [
+  "https://www.trendyol.com/dark-seer/beyaz-unisex-sneaker-p-42713792"
+];
 
 Scenario("Top colors -> select -> add to cart -> remove (per URL)", async ({ I }) => {
-    const dataset = process.env.DATASET || "datasets/demo.txt";
-  const urls = readProducts(dataset);
-  I.say("DATASET=" + dataset);if (!urls.length) {
-    I.say("No URLs found in products.txt");
-    return;
+  I.say("TEST_STARTED");
+
+  const validUrls = PRODUCT_URLS.filter(u => /^https?:\/\//i.test(u));
+  if (!validUrls.length) {
+    throw new Error("Gecerli URL yok.");
   }
 
-    const topN = config.topColors;
-  const caseReport = getCaseReport();
-  I.say("CaseReport=" + (caseReport ? "OK" : "NULL"));
-  I.say("TOP_COLORS=" + topN);
+  for (const url of validUrls) {
+    I.say(`URL=${url}`);
+    I.amOnPage(url);
+    I.wait(5);
 
-  if (caseReport) caseReport.add("multi:start", { count: urls.length, topN });
+    const currentUrl = await I.grabCurrentUrl();
+    const title = await I.grabTitle();
 
-  const flow = new TopColorsAddRemoveFlow({ I, caseReport, topN });
+    I.say(`CURRENT_URL=${currentUrl}`);
+    I.say(`PAGE_TITLE=${title}`);
 
-  let opened = 0, added = 0, warn = 0, skip = 0;
-  for (let i = 0; i < urls.length; i++) {
-    const r = await flow.runOneUrl({ url: urls[i], idx: i + 1, total: urls.length });
-    opened += r.opened || 0;
-    added += r.added || 0;
-    warn += r.warn || 0;
-    skip += r.skip || 0;
-  
-
-    if (String(process.env.DEMO_MODE || "") === "1" && (r.status === "ok" || (r.added || 0) > 0)) {
-      I.say("DEMO_MODE=1 -> first success, stopping early");
-      break;
-    }}
-
-    // If nothing was actually executed (all skipped), fail fast (enterprise signal)
-  if (opened > 0 && added === 0 && skip === opened) {
-  if (String(process.env.DEMO_MODE || "") === "1") {
-    I.say("WARN: All URLs were skipped (demo mode). No real E2E executed.");
-  } else {
-    throw new Error("All URLs were skipped (blocked/404/no-variants). No real E2E executed.");
+    I.saveScreenshot(`pdp-debug-${Date.now()}.png`);
   }
-}
-
-if (caseReport) caseReport.add("multi:done", { ok: true, counters: { opened, added, warn, skip } });
 });

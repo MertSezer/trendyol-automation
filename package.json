@@ -34,7 +34,8 @@
         "golden:build": "powershell -ExecutionPolicy Bypass -File ./scripts/build_golden_candidates.ps1",
         "testcases:generate": "powershell -ExecutionPolicy Bypass -File ./scripts/build_generated_test_cases.ps1",
         "test:ball-variants": "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1",
-        "test:ball-variants:ci": "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1"
+        "test:ball-variants:ci": "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1",
+        "test:one": "codeceptjs run --steps"
     },
     "keywords": [],
     "author": "",
@@ -45,6 +46,8 @@
         "@wdio/protocols": "^9.24.0",
         "ajv": "^8.18.0",
         "ajv-formats": "^3.0.1",
+        "allure-commandline": "^2.38.0",
+        "allure-js-commons": "^3.6.0",
         "chromedriver": "^146.0.0",
         "codeceptjs": "^3.7.6",
         "cross-env": "^10.1.0",

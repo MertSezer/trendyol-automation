@@ -1,0 +1,142 @@
+﻿const { I } = inject();
+
+module.exports = {
+  locators: {
+    cartLink: { xpath: "//a[contains(., 'Sepetim')]" },
+    goToCartButton: { xpath: "//button[contains(., 'Sepete Git')]" },
+    removeButtons: [
+      '[data-testid*="remove"]',
+      '[class*="remove"]',
+      'i[class*="trash"]',
+      'button[class*="delete"]',
+      'button[class*="remove"]'
+    ],
+    productTitles: [
+      '[data-testid="product-name"]',
+      '[class*="product-name"]',
+      '[class*="prdct-desc-cntnr-name"]',
+      '.pb-basket-item-text',
+      '.basket-product-name',
+      'a[href*="/p-"]'
+    ]
+  },
+
+  async closePopups() {
+    const selectorsToRemove = [
+      '[data-testid="overlay"]',
+      '.onboarding-tour__overlay',
+      '.onboarding-tour',
+      '[class*="overlay"]',
+      '[class*="social-proof"]',
+      '[class*="tooltip"]',
+      '[class*="popover"]',
+      '[class*="modal"]',
+      '[class*="dropdown"]'
+    ];
+
+    for (const sel of selectorsToRemove) {
+      const count = await I.grabNumberOfVisibleElements(sel).catch(() => 0);
+      if (count > 0) {
+        await I.executeScript((s) => {
+          document.querySelectorAll(s).forEach((el) => el.remove());
+        }, sel).catch(() => {});
+        await I.wait(1);
+      }
+    }
+  },
+
+  async goToCart() {
+    await this.closePopups();
+
+    const candidates = [
+      { xpath: "//button[contains(., 'Sepetim')]" },
+      { xpath: "//button[contains(., 'Sepete Git')]" },
+      { xpath: "//button[contains(., 'Go to Cart')]" },
+      { xpath: "//a[contains(., 'Sepetim')]" }
+    ];
+
+    for (const locator of candidates) {
+      const count = await I.grabNumberOfVisibleElements(locator).catch(() => 0);
+      if (count > 0) {
+        await I.scrollTo(locator);
+        await I.wait(1);
+        await I.click(locator);
+        await I.wait(2);
+        return;
+      }
+    }
+
+    throw new Error("Cart link/button not found");
+  },
+
+  async getCartProductTitles() {
+    await this.closePopups();
+
+    const titles = await I.executeScript((selectors) => {
+      const out = [];
+      const seen = new Set();
+
+      const normalize = (s) =>
+        (s || "")
+          .toString()
+          .replace(/\s+/g, " ")
+          .trim();
+
+      for (const selector of selectors) {
+        const nodes = Array.from(document.querySelectorAll(selector));
+        for (const node of nodes) {
+          const text = normalize(node.innerText || node.textContent || "");
+          if (!text) continue;
+          if (text.length < 2) continue;
+          if (text.length > 200) continue;
+          if (seen.has(text)) continue;
+          seen.add(text);
+          out.push(text);
+        }
+      }
+
+      return out;
+    }, this.locators.productTitles);
+
+    return Array.isArray(titles) ? titles : [];
+  },
+
+  async removeFirstItem() {
+    await this.closePopups();
+
+    const removed = await I.executeScript((selectors) => {
+      for (const selector of selectors) {
+        const nodes = Array.from(document.querySelectorAll(selector));
+        for (const el of nodes) {
+          const r = el.getBoundingClientRect();
+          if (r.width < 5 || r.height < 5) continue;
+
+          try {
+            el.scrollIntoView({ block: "center", inline: "center" });
+            el.click();
+            return true;
+          } catch (_) {}
+        }
+      }
+      return false;
+    }, this.locators.removeButtons);
+
+    if (!removed) {
+      throw new Error("Could not remove first cart item");
+    }
+
+    await I.wait(2);
+  },
+
+  async verifyAndScreenshot() {
+    await I.grabTextFrom("body");
+    await I.grabCurrentUrl();
+    await I.saveScreenshot(`cart_verify_${Date.now()}.png`);
+  },
+
+  async verifyEmpty() {
+    await I.grabTextFrom("body");
+    await I.grabCurrentUrl();
+    await I.saveScreenshot(`cart_empty_${Date.now()}.png`);
+  }
+};

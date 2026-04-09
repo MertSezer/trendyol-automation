@@ -1,0 +1,131 @@
+﻿const fs = require("fs");
+const path = require("path");
+
+Feature("Trendyol - Multi Product FIFO Evidence Scenario");
+
+function writeStepNote(name, lines) {
+  const filePath = path.join("output", `${name}.txt`);
+  const content = Array.isArray(lines) ? lines.join("\n") : String(lines);
+  fs.writeFileSync(filePath, content, "utf8");
+}
+
+function pad(n) {
+  return String(n).padStart(2, "0");
+}
+
+function loadProducts() {
+  const filePath = path.join(process.cwd(), "products.json");
+  if (!fs.existsSync(filePath)) {
+    throw new Error("products.json not found");
+  }
+
+  const raw = fs.readFileSync(filePath, "utf8");
+  const data = JSON.parse(raw);
+
+  if (!Array.isArray(data) || data.length < 4) {
+    throw new Error("products.json must contain at least 4 products");
+  }
+
+  return data.filter(x => x && x.url);
+}
+
+Scenario("Add products one by one, keep only last 3 in cart, capture evidence on every page", async ({ I, ProductPage, CartPage }) => {
+  const products = loadProducts();
+  const cartLimit = Number(process.env.CART_LIMIT || 3);
+
+  const fifoQueue = [];
+  let stepNo = 1;
+
+  for (const product of products) {
+    const productName = product.name || product.url;
+    const productUrl = product.url;
+
+    I.say(`PROCESS PRODUCT: ${productName}`);
+
+    await ProductPage.open(productUrl);
+    await ProductPage.prepare();
+
+    const productPageUrl = await I.grabCurrentUrl();
+    await I.saveScreenshot(`${pad(stepNo)}_product_page.png`);
+    writeStepNote(`${pad(stepNo)}_product_page`, [
+      "step: product_page",
+      `product_name: ${productName}`,
+      `product_url: ${productUrl}`,
+      `opened_url: ${productPageUrl}`,
+      `time: ${new Date().toISOString()}`
+    ]);
+    stepNo++;
+
+    await ProductPage.addToCart();
+
+    let miniCartUrl = "-";
+    try {
+      miniCartUrl = await I.grabCurrentUrl();
+    } catch (_) {}
+
+    let miniCartBody = "";
+    try {
+      miniCartBody = await I.grabTextFrom("body");
+    } catch (_) {}
+
+    await I.saveScreenshot(`${pad(stepNo)}_mini_cart_after_add.png`);
+    writeStepNote(`${pad(stepNo)}_mini_cart_after_add`, [
+      "step: mini_cart_after_add",
+      `product_name: ${productName}`,
+      `product_url: ${productUrl}`,
+      `current_url: ${miniCartUrl}`,
+      `body_excerpt: ${miniCartBody.replace(/\s+/g, " ").slice(0, 500)}`,
+      `time: ${new Date().toISOString()}`
+    ]);
+    stepNo++;
+
+    fifoQueue.push(productName);
+
+    await CartPage.goToCart();
+
+    const cartUrlAfterAdd = await I.grabCurrentUrl();
+    let cartBodyAfterAdd = "";
+    try {
+      cartBodyAfterAdd = await I.grabTextFrom("body");
+    } catch (_) {}
+
+    await I.saveScreenshot(`${pad(stepNo)}_basket_after_add.png`);
+    writeStepNote(`${pad(stepNo)}_basket_after_add`, [
+      "step: basket_after_add",
+      `product_name: ${productName}`,
+      `cart_url: ${cartUrlAfterAdd}`,
+      `fifo_queue_now: ${JSON.stringify(fifoQueue)}`,
+      `body_excerpt: ${cartBodyAfterAdd.replace(/\s+/g, " ").slice(0, 700)}`,
+      `time: ${new Date().toISOString()}`
+    ]);
+    stepNo++;
+
+    if (fifoQueue.length > cartLimit) {
+      const removedProduct = fifoQueue.shift();
+
+      I.say(`REMOVE OLDEST PRODUCT: ${removedProduct}`);
+
+      await CartPage.goToCart();
+      await CartPage.removeFirstItem();
+
+      const cartUrlAfterRemove = await I.grabCurrentUrl();
+      let cartBodyAfterRemove = "";
+      try {
+        cartBodyAfterRemove = await I.grabTextFrom("body");
+      } catch (_) {}
+
+      await I.saveScreenshot(`${pad(stepNo)}_basket_after_remove_oldest.png`);
+      writeStepNote(`${pad(stepNo)}_basket_after_remove_oldest`, [
+        "step: basket_after_remove_oldest",
+        `last_added_product: ${productName}`,
+        `removed_oldest_product: ${removedProduct}`,
+        `cart_limit: ${cartLimit}`,
+        `fifo_queue_after_remove: ${JSON.stringify(fifoQueue)}`,
+        `cart_url: ${cartUrlAfterRemove}`,
+        `body_excerpt: ${cartBodyAfterRemove.replace(/\s+/g, " ").slice(0, 700)}`,
+        `time: ${new Date().toISOString()}`
+      ]);
+      stepNo++;
+    }
+  }
+});
