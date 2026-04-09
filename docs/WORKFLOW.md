@@ -23,3 +23,19 @@ git pull --rebase origin feat/ci-and-reporting
 git add -A
 git commit -m "Describe changes"
 git push
+## Trendyol - manual policy probe
+
+$env:PRODUCT_URL = "https://www.trendyol.com/..."
+$env:POST_SUCCESS_WAIT_MS = "15000"
+npm run trendyol:manual-policy
+
+## Optional strict assertions
+
+$env:EXPECTED_TEXT = "BURAYA_UYARI_VEYA_DURUM_METNINI_YAZIN"
+npm run trendyol:manual-policy
+
+# OR
+
+$env:DISABLED_SELECTOR = "[aria-disabled=""true""]"
+$env:EXPECTED_DISABLED_COUNT = "1"
+npm run trendyol:manual-policy

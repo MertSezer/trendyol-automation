@@ -37,7 +37,8 @@
     "test:ball-variants:ci": "powershell -ExecutionPolicy Bypass -File ./scripts/run_ball_variants_guarded.ps1",
     "test:one": "codeceptjs run --steps",
     "imdb:manual": "codeceptjs run -c codecept.imdb.manual.conf.js --steps --verbose",
-    "imdb:explore": "codeceptjs run -c codecept.imdb.explore.conf.js --steps --verbose -p pauseOnFail"
+    "imdb:explore": "codeceptjs run -c codecept.imdb.explore.conf.js --steps --verbose -p pauseOnFail",
+    "trendyol:manual-policy": "codeceptjs run -c codecept.trendyol.manual.conf.js --steps --verbose -p pauseOnFail"
   },
   "keywords": [],
   "author": "",
