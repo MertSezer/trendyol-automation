@@ -38,7 +38,11 @@
     "test:one": "codeceptjs run --steps",
     "imdb:manual": "codeceptjs run -c codecept.imdb.manual.conf.js --steps --verbose",
     "imdb:explore": "codeceptjs run -c codecept.imdb.explore.conf.js --steps --verbose -p pauseOnFail",
-    "trendyol:manual-policy": "codeceptjs run -c codecept.trendyol.manual.conf.js --steps --verbose -p pauseOnFail"
+    "trendyol:manual-policy": "codeceptjs run -c codecept.trendyol.manual.conf.js --steps --verbose -p pauseOnFail",
+    "imdb:any:person": "codeceptjs run tests/imdb/any_title_to_cast_profile_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail",
+    "imdb:any:character": "codeceptjs run tests/imdb/any_title_to_character_text_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail",
+    "trendyol:any:policy": "codeceptjs run tests/trendyol/any_multivariant_policy_probe_test.js --config codecept.trendyol.any.conf.js --steps --verbose -p pauseOnFail",
+    "imdb:any:character-page": "codeceptjs run tests/imdb/any_title_to_character_page_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail"
   },
   "keywords": [],
   "author": "",
