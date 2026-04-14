@@ -4,6 +4,10 @@ const path = require('node:path');
 
 const productUrl = process.env.PRODUCT_URL;
 const expectedText = process.env.EXPECTED_TEXT || '';
+const expectedTexts =
+  process.env.EXPECTED_TEXTS_JSON
+    ? JSON.parse(process.env.EXPECTED_TEXTS_JSON)
+    : (expectedText ? [expectedText] : []);
 const expectedUrlFragment = process.env.EXPECTED_URL_FRAGMENT || '';
 const disabledSelector = process.env.DISABLED_SELECTOR || '';
 const expectedDisabledCount =
@@ -45,9 +49,9 @@ Scenario('real user can manually probe a product selection policy', ({ I }) => {
   });
 
   I.say('Now act like a real user.');
-  I.say('1) Select the first sofa/variant/color.');
-  I.say('2) Then try the second conflicting choice.');
-  I.say('3) Observe whether the second choice is blocked, disables another option, changes quantity, or replaces the first one.');
+  I.say('1) Add the products you want.');
+  I.say('2) Go to the cart page.');
+  I.say('3) Then press ENTER in the interactive shell.');
 
   pause();
 
@@ -80,8 +84,8 @@ Scenario('real user can manually probe a product selection policy', ({ I }) => {
     I.seeInCurrentUrl(expectedUrlFragment);
   }
 
-  if (expectedText) {
-    I.see(expectedText);
+  for (const text of expectedTexts) {
+    I.see(text);
   }
 
   if (disabledSelector && expectedDisabledCount !== null) {
@@ -96,7 +100,11 @@ Scenario('real user can manually probe a product selection policy', ({ I }) => {
     });
   }
 
-  if (!expectedText && !expectedUrlFragment && !(disabledSelector && expectedDisabledCount !== null)) {
+  if (
+    !expectedTexts.length &&
+    !expectedUrlFragment &&
+    !(disabledSelector && expectedDisabledCount !== null)
+  ) {
     I.say('No automatic assertion was configured for this run. This execution is currently an interactive evidence capture.');
   } else {
     I.say('SUCCESS: policy signal matched the configured expectation');
