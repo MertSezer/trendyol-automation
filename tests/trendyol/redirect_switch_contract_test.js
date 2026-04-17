@@ -2,6 +2,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+// VERSION: redirect-switch-v2-stable-evidence
+
 const startUrl =
   process.env.TRENDYOL_START_URL;
 const evidenceBaseName =
@@ -40,10 +42,19 @@ async function saveEvidence(page, phase, extra = {}) {
     'utf8'
   );
 
-  await page.screenshot({
-    path: path.join(outDir, `${base}.png`),
-    fullPage: true,
-  });
+  try {
+    await page.screenshot({
+      path: path.join(outDir, `${base}.png`),
+      fullPage: false,
+      timeout: 15000,
+    });
+  } catch (error) {
+    fs.writeFileSync(
+      path.join(outDir, `${base}.screenshot-error.txt`),
+      String(error?.stack || error),
+      'utf8'
+    );
+  }
 }
 
 Feature('Trendyol redirect-switch contract');

@@ -48,7 +48,10 @@
                     "trendyol:any:policy:state-aware":  "codeceptjs run tests/trendyol/any_policy_state_aware_test.js --config codecept.trendyol.any.conf.js --steps --verbose -p pauseOnFail",
                     "imdb:any:mapping:capture":  "codeceptjs run tests/imdb/same_page_mapping_capture_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail",
                     "trendyol:any:redirect-switch":  "codeceptjs run tests/trendyol/redirect_switch_contract_test.js --config codecept.trendyol.any.conf.js --steps --verbose -p pauseOnFail",
-                    "trendyol:any:coexist-cart":  "codeceptjs run tests/trendyol/coexist_cart_contract_test.js --config codecept.trendyol.any.conf.js --steps --verbose -p pauseOnFail"
+                    "trendyol:any:coexist-cart":  "codeceptjs run tests/trendyol/coexist_cart_contract_test.js --config codecept.trendyol.any.conf.js --steps --verbose -p pauseOnFail",
+                    "imdb:any:title-snapshot":  "codeceptjs run tests/imdb/title_cast_snapshot_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail",
+                    "imdb:any:title-parser":  "codeceptjs run tests/imdb/title_cast_parser_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail",
+                    "imdb:any:title-structure":  "codeceptjs run tests/imdb/title_cast_structure_snapshot_test.js --config codecept.imdb.any.conf.js --steps --verbose -p pauseOnFail"
                 },
     "keywords":  [
 
